@@ -514,8 +514,8 @@ export class RemoteThreadListThreadListRuntimeCore
       };
     }, [id]);
 
-    const boundIds = this.useBoundIds();
-    const { Provider } = this.useProvider();
+    const boundIds = this.useBoundIds((state) => state);
+    const Provider = this.useProvider((state) => state.Provider);
 
     const adapters = {
       modelContext: this.contextProvider,

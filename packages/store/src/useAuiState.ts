@@ -1,4 +1,9 @@
-import { useSyncExternalStore, useDebugValue } from "react";
+import {
+  useCallback,
+  useDebugValue,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import type { AssistantState } from "./types/client";
 import { useAui } from "./useAui";
 import { getProxiedAssistantState } from "./utils/proxied-assistant-state";
@@ -21,12 +26,40 @@ import { getProxiedAssistantState } from "./utils/proxied-assistant-state";
 export const useAuiState = <T>(selector: (state: AssistantState) => T): T => {
   const aui = useAui();
   const proxiedState = getProxiedAssistantState(aui);
+  const cacheRef = useRef<{
+    selector: ((state: AssistantState) => T) | undefined;
+    hasValue: boolean;
+    value: T | undefined;
+  }>({
+    selector: undefined,
+    hasValue: false,
+    value: undefined,
+  });
 
-  const slice = useSyncExternalStore(
-    aui.subscribe,
-    () => selector(proxiedState),
-    () => selector(proxiedState),
+  const getSnapshot = () => {
+    if (cacheRef.current.hasValue && cacheRef.current.selector === selector) {
+      return cacheRef.current.value as T;
+    }
+
+    const nextValue = selector(proxiedState);
+    cacheRef.current = {
+      selector,
+      hasValue: true,
+      value: nextValue,
+    };
+    return nextValue;
+  };
+
+  const subscribe = useCallback(
+    (callback: () => void) =>
+      aui.subscribe(() => {
+        cacheRef.current.hasValue = false;
+        callback();
+      }),
+    [aui],
   );
+
+  const slice = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   if (slice === proxiedState) {
     throw new Error(

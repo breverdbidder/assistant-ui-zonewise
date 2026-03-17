@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ReactNode } from "react";
+import { StrictMode, type ReactNode } from "react";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuiProvider } from "../utils/react-assistant-context";
@@ -89,6 +89,39 @@ describe("store hooks", () => {
     }).toThrow(
       "You tried to return the entire AssistantState. This is not supported due to technical limitations.",
     );
+  });
+
+  it("useAuiState keeps object snapshots stable between notifications", () => {
+    const testClient = createTestAuiClient({ counter: 1 });
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const selector = (s: any) => ({ counter: s.counter });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <StrictMode>
+        <AuiProvider value={testClient.client as never}>{children}</AuiProvider>
+      </StrictMode>
+    );
+
+    const { result, rerender } = renderHook(() => useAuiState(selector), {
+      wrapper,
+    });
+    const firstSnapshot = result.current;
+
+    rerender();
+
+    expect(result.current).toBe(firstSnapshot);
+    expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("getSnapshot should be cached"),
+    );
+
+    act(() => {
+      testClient.state.counter = 2;
+      testClient.notify();
+    });
+
+    expect(result.current).toEqual({ counter: 2 });
+    expect(result.current).not.toBe(firstSnapshot);
   });
 
   it("useAuiEvent subscribes with normalized selector and invokes latest callback", () => {

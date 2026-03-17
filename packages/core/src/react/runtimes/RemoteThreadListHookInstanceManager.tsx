@@ -28,7 +28,7 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
     StoreApi<{ useRuntime: RemoteThreadListHook }>
   >;
   private instances = new Map<string, RemoteThreadListHookInstance>();
-  private useAliveThreadsKeysChanged = create(() => ({}));
+  private useAliveThreadsVersion = create<number>(() => 0);
   private parent: ThreadListRuntimeCore;
 
   constructor(
@@ -43,7 +43,7 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
   public startThreadRuntime(threadId: string) {
     if (!this.instances.has(threadId)) {
       this.instances.set(threadId, {});
-      this.useAliveThreadsKeysChanged.setState({}, true);
+      this.useAliveThreadsVersion.setState((version) => version + 1, true);
     }
 
     return new Promise<ThreadRuntimeCore>((resolve, reject) => {
@@ -72,7 +72,7 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
 
   public stopThreadRuntime(threadId: string) {
     this.instances.delete(threadId);
-    this.useAliveThreadsKeysChanged.setState({}, true);
+    this.useAliveThreadsVersion.setState((version) => version + 1, true);
   }
 
   public setRuntimeHook(newRuntimeHook: RemoteThreadListHook) {
@@ -85,7 +85,7 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
   private _InnerActiveThreadProvider: FC<{
     threadId: string;
   }> = ({ threadId }) => {
-    const { useRuntime } = this.useRuntimeHook();
+    const useRuntime = this.useRuntimeHook((s) => s.useRuntime);
     const runtime = useRuntime();
 
     const threadBinding = (runtime.thread as ThreadRuntimeImpl)
@@ -96,17 +96,16 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
       if (!aliveThread)
         throw new Error("Thread not found. This is a bug in assistant-ui.");
 
-      aliveThread.runtime = threadBinding.getState();
+      const nextRuntime = threadBinding.getState();
+      if (aliveThread.runtime === nextRuntime) {
+        return;
+      }
+
+      aliveThread.runtime = nextRuntime;
       this._notifySubscribers();
     }, [threadId, threadBinding]);
 
-    const isMounted = useRef(false);
-    if (!isMounted.current) {
-      updateRuntime();
-    }
-
     useEffect(() => {
-      isMounted.current = true;
       updateRuntime();
       return threadBinding.outerSubscribe(updateRuntime);
     }, [threadBinding, updateRuntime]);
@@ -163,7 +162,7 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
   public __internal_RenderThreadRuntimes: FC<{
     provider: ComponentType<PropsWithChildren>;
   }> = ({ provider }) => {
-    this.useAliveThreadsKeysChanged(); // trigger re-render on alive threads change
+    this.useAliveThreadsVersion(); // trigger re-render on alive threads change
 
     return Array.from(this.instances.keys()).map((threadId) => (
       <this._OuterActiveThreadProvider
