@@ -82,9 +82,10 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
     }
   }
 
-  private _InnerActiveThreadProvider: FC<{
+  private _RuntimeBinder: FC<{
     threadId: string;
-  }> = ({ threadId }) => {
+    provider: ComponentType<PropsWithChildren>;
+  }> = ({ threadId, provider: Provider }) => {
     const { useRuntime } = this.useRuntimeHook();
     const runtime = useRuntime();
 
@@ -110,6 +111,19 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
       updateRuntime();
       return threadBinding.outerSubscribe(updateRuntime);
     }, [threadBinding, updateRuntime]);
+
+    return (
+      <Provider>
+        <this._InitializationHandler runtime={runtime} />
+      </Provider>
+    );
+  };
+
+  private _InitializationHandler: FC<{
+    runtime: AssistantRuntime;
+  }> = ({ runtime }) => {
+    const threadBinding = (runtime.thread as ThreadRuntimeImpl)
+      .__internal_threadBinding;
 
     const aui = useAui();
     const initPromiseRef = useRef<Promise<unknown> | undefined>(undefined);
@@ -153,9 +167,7 @@ export class RemoteThreadListHookInstanceManager extends BaseSubscribable {
 
     return (
       <ThreadListItemRuntimeProvider runtime={runtime}>
-        <Provider>
-          <this._InnerActiveThreadProvider threadId={threadId} />
-        </Provider>
+        <this._RuntimeBinder threadId={threadId} provider={Provider} />
       </ThreadListItemRuntimeProvider>
     );
   });
