@@ -23,9 +23,17 @@ aui.composer().setText("Hello from the composer");
 // send whatever is in the composer
 aui.composer().send();
 
+// send with steer (interrupt current run to process immediately)
+aui.composer().send({ steer: true });
+
 // get the current text in the composer state
 const composerState = aui.composer().getState();
 const currentText = composerState.text;
+
+// access queue items (when runtime supports queuing)
+const queueItem = aui.composer().queueItem({ index: 0 });
+queueItem.steer(); // Process this item immediately
+queueItem.remove(); // Remove from queue
 
 ```
 
@@ -84,4 +92,26 @@ The state of the thread composer which is the composer the user can interact wit
 
 <ParametersTable {...ThreadComposerState} />
 
+### Type References
+
+#### `ComposerSendOptions`
+
+Options for the `send()` method.
+
+```typescript
+type ComposerSendOptions = {
+  steer?: boolean; // Interrupt current run to process this immediately (requires runtime queue support)
+}
+```
+
+#### `QueueItemState`
+
+State of a queued message waiting to be processed.
+
+```typescript
+type QueueItemState = {
+  id: string;
+  prompt: string;
+}
+```
 

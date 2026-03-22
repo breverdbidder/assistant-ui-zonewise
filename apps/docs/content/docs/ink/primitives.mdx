@@ -193,9 +193,14 @@ Ink `TextInput` wired to the composer runtime. Value is managed automatically.
 | `placeholder` | `string` | Placeholder text when empty |
 | `autoFocus` | `boolean` | Auto-focus on mount |
 
+**Keyboard shortcuts:**
+- `Cmd/Ctrl+Shift+Enter` — Send with steer to interrupt the current run (when queue support is enabled)
+
 ### Send
 
 `Box` that triggers sending the current message. Typically used with a button-like UI.
+
+When the runtime supports message queuing, the Send button stays enabled during runs — pressing it adds the message to the queue. Without queue support, the button is disabled while running (existing behavior).
 
 ```tsx
 <ComposerPrimitive.Send>
@@ -236,6 +241,30 @@ Triggers attachment addition.
   <Text>[Attach]</Text>
 </ComposerPrimitive.AddAttachment>
 ```
+
+### Queue
+
+Renders all queued messages in the composer. Uses a render function pattern.
+
+```tsx
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => (
+    <Box>
+      <QueueItemPrimitive.Text />
+      <QueueItemPrimitive.Steer>
+        <Text>[Run Now]</Text>
+      </QueueItemPrimitive.Steer>
+      <QueueItemPrimitive.Remove>
+        <Text color="red">[×]</Text>
+      </QueueItemPrimitive.Remove>
+    </Box>
+  )}
+</ComposerPrimitive.Queue>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `(value: { queueItem: QueueItemState }) => ReactNode` | Render function for each queue item |
 
 ### Conditional Rendering (Composer)
 
@@ -283,6 +312,42 @@ Conditional rendering based on composer state. Shared from `@assistant-ui/core/r
 |------|------|-------------|
 | `editing` | `boolean` | Render when composer is in editing mode |
 | `dictation` | `boolean` | Render when dictation is currently active |
+
+## QueueItem
+
+```tsx
+import { QueueItemPrimitive } from "@assistant-ui/react-ink";
+```
+
+Primitives for rendering individual queue items. Queue items are messages submitted while the agent is running. These components are used inside `ComposerPrimitive.Queue`.
+
+### Text
+
+`Text` component displaying the prompt text of a queue item.
+
+```tsx
+<QueueItemPrimitive.Text />
+```
+
+### Steer
+
+Pressable that steers the current run to process this queue item immediately.
+
+```tsx
+<QueueItemPrimitive.Steer>
+  <Text color="yellow">[Run Now]</Text>
+</QueueItemPrimitive.Steer>
+```
+
+### Remove
+
+Pressable that removes this item from the queue.
+
+```tsx
+<QueueItemPrimitive.Remove>
+  <Text color="red">[×]</Text>
+</QueueItemPrimitive.Remove>
+```
 
 ## Message
 

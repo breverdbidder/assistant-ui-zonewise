@@ -9,6 +9,7 @@ This example demonstrates the first tap-native runtime implementation for assist
 - ✅ **Reactive Updates**: State changes automatically update the UI
 - ✅ **Type-Safe**: Full TypeScript support with client registry
 - ✅ **No Backend**: Pure client-side implementation
+- ✅ **Queue Support**: Optional message queuing and steering for advanced runtimes
 
 ## Getting Started
 
@@ -50,6 +51,32 @@ const messages: ExternalThreadMessage[] = [
 const aui = useAui({
   threads: InMemoryThreadList({
     thread: () => ExternalThread({ messages, isRunning: false }),
+  }),
+});
+```
+
+**Optional Queue Support**: ExternalThread can support message queuing via the `queue` adapter. When implemented, users can submit messages while the agent is running. Messages are queued and processed after the current run completes. Use `steer` to interrupt the current run for priority messages:
+
+```typescript
+const aui = useAui({
+  threads: InMemoryThreadList({
+    thread: () => ExternalThread({
+      messages,
+      isRunning,
+      queue: {
+        items: queueState,
+        enqueue: (message, { steer }) => {
+          // Queue a message to be processed after current run
+          // If steer=true, interrupt current run and process immediately
+        },
+        steer: (queueItemId) => {
+          // Promote an existing queue item (interrupt current run)
+        },
+        remove: (queueItemId) => {
+          // Remove a message from the queue
+        }
+      }
+    }),
   }),
 });
 ```
@@ -98,7 +125,8 @@ A client that accepts messages from external state:
 ```typescript
 ExternalThread({
   messages: ExternalThreadMessage[],
-  isRunning?: boolean
+  isRunning?: boolean,
+  queue?: ExternalThreadQueueAdapter  // Optional queue support
 })
 ```
 
@@ -137,6 +165,7 @@ You can extend this example to:
 4. **Enable editing**: Let users edit messages
 5. **Add attachments**: Support file uploads and images
 6. **Connect to AI**: Integrate with OpenAI, Anthropic, or other AI providers
+7. **Implement queue support**: Allow message submission during agent runs with priority message handling via steering
 
 ## Learn More
 

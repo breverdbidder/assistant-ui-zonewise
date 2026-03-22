@@ -551,6 +551,82 @@ const runtime = useExternalStoreRuntime({
 });
 ```
 
+### Message Queuing and Steering
+
+For runtimes that support message queuing (submitting messages while the agent is running) and steering (interrupting the current run to process a priority message), use the queue adapter:
+
+```tsx
+import { useState } from "react";
+import { ExternalThread, type QueueItemState } from "@assistant-ui/react";
+
+function MyChat() {
+  const [messages, setMessages] = useState<ExternalThreadMessage[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [queue, setQueue] = useState<QueueItemState[]>([]);
+
+  const queueAdapter = {
+    items: queue,
+    enqueue: (message, { steer }) => {
+      const queueItem = {
+        id: `queue-${Date.now()}`,
+        prompt: message.content[0]?.text || "",
+      };
+
+      if (steer) {
+        // Cancel current run and process this message immediately
+        api.cancelRun();
+        setQueue([queueItem]);
+        api.processMessage(message);
+      } else {
+        // Add to queue
+        setQueue((prev) => [...prev, queueItem]);
+      }
+    },
+    steer: (queueItemId) => {
+      // Interrupt current run and process this queued item
+      const item = queue.find((q) => q.id === queueItemId);
+      if (item) {
+        api.cancelRun();
+        setQueue([item]);
+        api.processQueueItem(item);
+      }
+    },
+    remove: (queueItemId) => {
+      setQueue((prev) => prev.filter((q) => q.id !== queueItemId));
+    },
+  };
+
+  return (
+    <ExternalThread
+      messages={messages}
+      isRunning={isRunning}
+      queue={queueAdapter}
+      onCancel={() => {
+        api.cancelRun();
+        setIsRunning(false);
+      }}
+    />
+  );
+}
+```
+
+**When to use queue adapter:**
+
+- Your backend supports submitting multiple messages while processing
+- You need to allow users to interrupt the current run for priority messages
+- You want to display queued messages in the UI
+
+**UI features enabled by queue adapter:**
+
+- `ComposerPrimitive.Send` stays enabled during runs (normally disabled)
+- `Cmd/Ctrl+Shift+Enter` hotkey sends with steer (interrupts current run)
+- `ComposerPrimitive.Queue` displays queued items
+- `QueueItemPrimitive` components for queue item UI
+
+<Callout type="info">
+  Queue support is optional. When not provided, the composer is disabled during runs (standard behavior). When provided, users can continue submitting messages while the agent processes.
+</Callout>
+
 ### Thread Management
 
 #### Managing Thread Context
@@ -1735,6 +1811,44 @@ Represents a single thread entry in the thread list.
     },
   ]}
 />
+
+### `ExternalThreadQueueAdapter`
+
+Enable message queuing and steering for runtimes that support submitting messages while the agent is running.
+
+<ParametersTable
+  type="ExternalThreadQueueAdapter"
+  parameters={[
+    {
+      name: "items",
+      type: "readonly QueueItemState[]",
+      description: "The current queue items",
+      required: true,
+    },
+    {
+      name: "enqueue",
+      type: "(message: any, opts: { steer: boolean }) => void",
+      description: "Called when a message is submitted via the composer. Receives the message and steer preference",
+      required: true,
+    },
+    {
+      name: "steer",
+      type: "(queueItemId: string) => void",
+      description: "Called to promote an existing queue item (cancel current run, run this immediately)",
+      required: true,
+    },
+    {
+      name: "remove",
+      type: "(queueItemId: string) => void",
+      description: "Called to remove an item from the queue",
+      required: true,
+    },
+  ]}
+/>
+
+<Callout type="info">
+  The queue adapter is optional — only implement it if your backend supports message queuing. When provided, users can submit messages while the agent is running, and use steering to interrupt the current run for priority messages.
+</Callout>
 
 ### Related Runtime APIs
 

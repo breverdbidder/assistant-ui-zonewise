@@ -13,6 +13,7 @@ export const contextColors = {
   "Message Context": "#bb2244",
   "MessagePart Context": "#268bd2",
   "Attachment Context": "#FFB6C1",
+  "QueueItem Context": "#9b59b6",
   "ThreadListItem Context": "#c678dd",
 };
 
@@ -183,6 +184,7 @@ The context for a single thread. Currently always corresponds to the runtime's m
 Programmatically access the thread's state and actions.
 
 - State: `useAuiState((s) => s.thread)`
+  - `thread.capabilities.queue: boolean` - Indicates if the runtime supports message queuing and steering
 - Actions: `useAui().thread()`
 - Composer: `useAuiState((s) => s.composer)`
 
@@ -281,7 +283,10 @@ Manages the state and actions for the message composer
 ### ComposerRuntime
 
 - State: `useAuiState((s) => s.composer)`
+  - `composer.queue: readonly QueueItemState[]` - Array of queued messages waiting to be processed
 - Actions: `useAui().composer()`
+  - `composer().send(options?: ComposerSendOptions)` - Send message, optionally with steer flag to interrupt current run
+  - `composer().queueItem({ index: number })` - Get queue item runtime by index
 
 ### ComposerPrimitive
 
@@ -306,6 +311,18 @@ Manages the state and actions for the message composer
     tooltip="Button to cancel composing"
   />
   <Component
+    name="ComposerPrimitive.Queue"
+    isContextProvider={true}
+    providedContexts={[
+      {
+        name: "QueueItem Context",
+        color: contextColors["QueueItem Context"],
+      },
+    ]}
+    docsLink="#composer-primitive-queue"
+    tooltip="Renders queued messages with a render function pattern"
+  />
+  <Component
     name="ComposerPrimitive.Attachments"
     isContextProvider={true}
     providedContexts={[
@@ -323,6 +340,46 @@ Manages the state and actions for the message composer
     tooltip="Button to add an attachment"
   />
 </Component>
+
+</ContextLevel>
+
+<ContextLevel color={contextColors["QueueItem Context"]}>
+
+## QueueItem Context
+
+Provides access to individual queue items within the composer. Available when iterating through ComposerPrimitive.Queue.
+
+### QueueItemRuntime
+
+- State: `useAuiState((s) => s.queueItem)`
+  - `queueItem.id: string` - Unique identifier for the queue item
+  - `queueItem.prompt: string` - The message text queued for processing
+- Methods: `useAui().queueItem()`
+  - `queueItem().getState()` - Get the current queue item state
+  - `queueItem().steer()` - Process this item immediately (interrupt current run)
+  - `queueItem().remove()` - Remove this item from the queue
+
+Scope: Available within ComposerPrimitive.Queue render function.
+
+### QueueItemPrimitive
+
+<Component
+  name="QueueItemPrimitive.Text"
+  docsLink="#queue-item-primitive-text"
+  tooltip="Renders the queue item's prompt text"
+/>
+
+<Component
+  name="QueueItemPrimitive.Steer"
+  docsLink="#queue-item-primitive-steer"
+  tooltip="Button to process this item immediately"
+/>
+
+<Component
+  name="QueueItemPrimitive.Remove"
+  docsLink="#queue-item-primitive-remove"
+  tooltip="Button to remove from queue"
+/>
 
 </ContextLevel>
 

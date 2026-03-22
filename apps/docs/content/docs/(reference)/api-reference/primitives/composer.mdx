@@ -21,6 +21,7 @@ import { ComposerPrimitive } from "@assistant-ui/react";
 const Composer = () => (
   <ComposerPrimitive.Root>
     <ComposerPrimitive.AttachmentDropzone>
+      <ComposerPrimitive.Queue />
       <ComposerPrimitive.Quote>
         <ComposerPrimitive.QuoteText />
         <ComposerPrimitive.QuoteDismiss />
@@ -139,6 +140,7 @@ Default (`submitMode="enter"`):
 | --- | --- |
 | <Kbd>Enter</Kbd> | Sends the message. |
 | <Kbd>Shift + Enter</Kbd> | Inserts a newline. |
+| <Kbd>Ctrl/Cmd + Shift + Enter</Kbd> | Sends the message with steer (interrupts the current run to process this message immediately, when queue is supported). |
 | <Kbd>Escape</Kbd> | Sends a cancel action. |
 
 With `submitMode="ctrlEnter"`:
@@ -147,11 +149,16 @@ With `submitMode="ctrlEnter"`:
 | --- | --- |
 | <Kbd>Ctrl/Cmd + Enter</Kbd> | Sends the message. |
 | <Kbd>Enter</Kbd> | Inserts a newline. |
+| <Kbd>Ctrl/Cmd + Shift + Enter</Kbd> | Sends the message with steer (interrupts the current run to process this message immediately, when queue is supported). |
 | <Kbd>Escape</Kbd> | Sends a cancel action. |
 
 ### Send
 
 The button to send the message.
+
+When the runtime supports message queuing, the Send button remains enabled during runs. Clicking it will enqueue the message. Without queue support, the button is disabled during runs.
+
+To programmatically send with steer (interrupt the current run), use `composer.send({ steer: true })`.
 
 This primitive renders a `<button>` element unless `asChild` is set.
 
@@ -305,6 +312,40 @@ This primitive renders a `<div>` element unless `asChild` is set.
     },
   ]}
 />
+
+### Queue
+
+Renders all queued messages in the composer. Only visible when the runtime supports message queuing.
+
+Accepts a render function that is called for each queue item with `{ queueItem: QueueItemState }`.
+
+```tsx
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => (
+    <div>
+      <QueueItemPrimitive.Text />
+      <QueueItemPrimitive.Steer>Run Now</QueueItemPrimitive.Steer>
+      <QueueItemPrimitive.Remove>×</QueueItemPrimitive.Remove>
+    </div>
+  )}
+</ComposerPrimitive.Queue>
+```
+
+<ParametersTable
+  type="ComposerPrimitiveQueueProps"
+  parameters={[
+    {
+      name: "children",
+      type: "(value: { queueItem: QueueItemState }) => ReactNode",
+      required: true,
+      description: "A render function called for each queue item.",
+    },
+  ]}
+/>
+
+<Callout type="info">
+See the QueueItemPrimitive documentation for components to render individual queue items.
+</Callout>
 
 ### Dictate
 
