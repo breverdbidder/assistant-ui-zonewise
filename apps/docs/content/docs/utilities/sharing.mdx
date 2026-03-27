@@ -1,6 +1,6 @@
 ---
 title: Sharing & Read-Only Views
-description: Export conversations and render read-only thread views.
+description: Export conversations, render read-only threads, and replay recorded sessions.
 ---
 
 assistant-ui provides utilities for sharing conversations: read-only thread views, serialization, and export formats.
@@ -85,6 +85,74 @@ import { toJSON } from "@assistant-ui/react";
 
 const json = toJSON(messages); // compact
 const pretty = toJSON(messages, { pretty: true }); // indented
+```
+
+## ThreadReplay
+
+Replays a recorded conversation timeline with playback controls. Built on top of `ThreadReadOnly`.
+
+```tsx
+import { ThreadReplay, ThreadPrimitive } from "@assistant-ui/react";
+
+<ThreadReplay recording={recording} autoPlay speed={2}>
+  <ThreadPrimitive.Messages>
+    {() => <MyMessageComponent />}
+  </ThreadPrimitive.Messages>
+</ThreadReplay>
+```
+
+<ParametersTable
+  type="ThreadReplayProps"
+  parameters={[
+    {
+      name: "recording",
+      type: "ThreadRecording",
+      description: "The recording data to replay.",
+    },
+    {
+      name: "autoPlay",
+      type: "boolean",
+      default: "false",
+      description: "Start playing immediately on mount.",
+    },
+    {
+      name: "speed",
+      type: "number",
+      default: "1",
+      description: "Playback speed multiplier.",
+    },
+    {
+      name: "children",
+      type: "ReactNode",
+      description: "Thread primitives to compose the replay view.",
+    },
+  ]}
+/>
+
+## useThreadRecorder
+
+Records a live conversation for later replay. Must be rendered inside an assistant-ui provider tree.
+
+```tsx
+import { useThreadRecorder } from "@assistant-ui/react";
+
+function RecordButton() {
+  const recorder = useThreadRecorder({
+    onUpdate: (recording) => {
+      localStorage.setItem("recording", JSON.stringify(recording));
+    },
+  });
+
+  return (
+    <div>
+      <span>{recorder.isRecording ? "Recording..." : "Ready"}</span>
+      <button onClick={() => console.log(recorder.export())}>
+        Export Recording
+      </button>
+      <button onClick={recorder.reset}>Reset</button>
+    </div>
+  );
+}
 ```
 
 ## Share Primitives

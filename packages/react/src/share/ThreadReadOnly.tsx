@@ -5,7 +5,7 @@ import type {
   ThreadMessage,
   SerializedThreadMessage,
 } from "@assistant-ui/core";
-import { deserializeMessages, isSerializedMessages } from "@assistant-ui/core";
+import { deserializeMessages } from "@assistant-ui/core";
 import { ReadonlyThreadProvider } from "@assistant-ui/core/react";
 
 export namespace ThreadReadOnly {
@@ -14,12 +14,17 @@ export namespace ThreadReadOnly {
   }>;
 }
 
+const areSerializedMessages = (
+  messages: readonly ThreadMessage[] | readonly SerializedThreadMessage[],
+): messages is readonly SerializedThreadMessage[] =>
+  messages.length > 0 && typeof messages[0]!.createdAt === "string";
+
 export const ThreadReadOnly: FC<ThreadReadOnly.Props> = ({
   messages,
   children,
 }) => {
   const threadMessages = useMemo(() => {
-    if (isSerializedMessages(messages)) {
+    if (areSerializedMessages(messages)) {
       return deserializeMessages(messages);
     }
     return messages as readonly ThreadMessage[];

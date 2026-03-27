@@ -132,4 +132,18 @@ describe("toMarkdown", () => {
     expect(result).toContain("Wikipedia");
     expect(result).toContain("https://en.wikipedia.org");
   });
+
+  it("renders file parts using the serialized filename field", () => {
+    const msg = {
+      id: "u-1",
+      role: "user",
+      createdAt: new Date(),
+      content: [{ type: "file", filename: "notes.txt" }],
+      attachments: [],
+      metadata: { custom: {} },
+    } as ThreadMessage;
+
+    const result = toMarkdown([msg]);
+    expect(result).toContain("[file: notes.txt]");
+  });
 });

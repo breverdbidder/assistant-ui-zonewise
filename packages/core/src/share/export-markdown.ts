@@ -22,7 +22,7 @@ const formatPart = (part: { type: string; [key: string]: unknown }): string => {
     case "image":
       return `![image](${(part.image as string) ?? "[embedded image]"})`;
     case "file":
-      return `[file: ${(part.name as string) ?? "file"}]`;
+      return `[file: ${(part.filename as string) ?? "file"}]`;
     default:
       return "";
   }

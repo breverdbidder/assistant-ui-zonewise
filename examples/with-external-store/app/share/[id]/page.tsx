@@ -21,13 +21,27 @@ export default function SharePage({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/share/${id}`)
+    const controller = new AbortController();
+
+    setThread(null);
+    setError(null);
+
+    fetch(`/api/share/${id}`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error("Thread not found");
         return res.json();
       })
-      .then(setThread)
-      .catch((err) => setError(err.message));
+      .then((nextThread) => {
+        setThread(nextThread);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setError(err instanceof Error ? err.message : "Failed to load thread");
+      });
+
+    return () => {
+      controller.abort();
+    };
   }, [id]);
 
   if (error) {

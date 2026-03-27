@@ -284,3 +284,12 @@ export {
 
 export { toMarkdown } from "./share/export-markdown";
 export { toJSON, type ToJSONOptions } from "./share/export-json";
+
+// === replay ===
+
+export type {
+  ThreadRecording,
+  ThreadRecordingEvent,
+} from "./replay/types";
+
+export { diffMessages, type MessageDiff } from "./replay/diff";

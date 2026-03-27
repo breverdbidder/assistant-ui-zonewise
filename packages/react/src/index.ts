@@ -407,6 +407,20 @@ export {
 
 export type { ToJSONOptions } from "@assistant-ui/core";
 
+// === replay ===
+
+export type {
+  ThreadRecording,
+  ThreadRecordingEvent,
+} from "@assistant-ui/core";
+
+export { diffMessages } from "@assistant-ui/core";
+export type { MessageDiff } from "@assistant-ui/core";
+
+export { useThreadRecorder } from "./replay/useThreadRecorder";
+export { ThreadReplay } from "./replay/ThreadReplay";
+export { PlaybackControls } from "./replay/PlaybackControls";
+
 // ============================================================================
 // Backwards compatibility - deprecated exports
 // ============================================================================
