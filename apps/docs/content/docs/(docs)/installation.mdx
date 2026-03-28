@@ -212,7 +212,7 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const { messages, system, tools } = await req.json();
   const result = streamText({
-    model: google("gemini-2.0-flash"),
+    model: google("gemini-3-flash"),
     system,
     messages: await convertToModelMessages(messages),
     tools: frontendTools(tools),
@@ -231,7 +231,7 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const { messages, system, tools } = await req.json();
   const result = streamText({
-    model: vertex("gemini-2.0-flash"),
+    model: vertex("gemini-3-flash"),
     system,
     messages: await convertToModelMessages(messages),
     tools: frontendTools(tools),
