@@ -1,0 +1,110 @@
+---
+title: AG-UI Protocol
+description: Integration with AG-UI protocol endpoints for streaming AI agent communication.
+---
+
+The `@assistant-ui/react-ag-ui` package provides integration with AG-UI protocol endpoints, enabling streaming communication with AG-UI-compatible backends.
+
+## Overview
+
+AG-UI (Agent UI) is an open protocol for AI agent communication with frontend applications. The integration supports:
+
+- **Streaming responses** with real-time text updates
+- **Tool calling** for agent actions
+- **Error handling** with visible error messages in chat
+- **State management** via snapshot and delta events
+- **Event subscriptions** for custom runtime event handling
+
+## Installation
+
+<InstallCommand npm={["@assistant-ui/react-ag-ui"]} />
+
+## Basic Usage
+
+<Steps>
+
+<Step>
+
+### Set up the Runtime
+
+Use `useAgUiRuntime` to connect to your AG-UI endpoint:
+
+```tsx title="app/page.tsx"
+"use client";
+import { useAgUiRuntime } from "@assistant-ui/react-ag-ui";
+import { AssistantRuntimeProvider } from "@assistant-ui/react";
+import { Thread } from "@/components/assistant-ui/thread";
+
+export default function ChatPage() {
+  const runtime = useAgUiRuntime({
+    api: "/api/agent",
+  });
+
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <Thread />
+    </AssistantRuntimeProvider>
+  );
+}
+```
+
+</Step>
+
+</Steps>
+
+## Error Handling
+
+When your AG-UI backend sends a `RUN_ERROR` event, the error message is automatically displayed in the assistant's response bubble. This provides immediate feedback to users when something goes wrong.
+
+```typescript
+// Backend sends RUN_ERROR event
+{
+  type: "RUN_ERROR",
+  message: "Failed to process request: API rate limit exceeded",
+  code: "RATE_LIMIT_ERROR"
+}
+```
+
+The error message appears directly in the chat interface, making it easy for users to understand what happened without needing to check browser console or network logs.
+
+### Custom Error Handling
+
+For advanced use cases, you can subscribe to error events using the `onRunErrorEvent` callback:
+
+```tsx
+import { createAgUiSubscriber } from "@assistant-ui/react-ag-ui";
+
+const subscriber = createAgUiSubscriber(dispatch, {
+  onRunErrorEvent: ({ event }) => {
+    // Custom error handling logic
+    console.error("Run error:", event);
+    // Send to error tracking service, show custom UI, etc.
+  },
+});
+```
+
+## Event Subscriptions
+
+The AG-UI runtime provides event callbacks for handling various runtime events:
+
+| Callback | Event Type | Description |
+|----------|------------|-------------|
+| `onTextEvent` | `TEXT` | Text content streaming |
+| `onToolCallStartEvent` | `TOOL_CALL_START` | Tool call initiated |
+| `onToolCallEndEvent` | `TOOL_CALL_END` | Tool call completed |
+| `onToolCallChunkEvent` | `TOOL_CALL_CHUNK` | Tool call streaming chunk |
+| `onToolCallResultEvent` | `TOOL_CALL_RESULT` | Tool execution result |
+| `onRunErrorEvent` | `RUN_ERROR` | Run error occurred |
+| `onStateSnapshotEvent` | `STATE_SNAPSHOT` | Full state snapshot |
+| `onStateDeltaEvent` | `STATE_DELTA` | Incremental state update |
+| `onMessagesSnapshotEvent` | `MESSAGES_SNAPSHOT` | Full messages snapshot |
+
+## Examples
+
+Explore the AG-UI example in our [examples repository](https://github.com/assistant-ui/assistant-ui/tree/main/examples/with-ag-ui).
+
+To scaffold a new project with AG-UI:
+
+```bash
+npx assistant-ui@latest create my-app -e with-ag-ui
+```
