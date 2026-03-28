@@ -704,7 +704,11 @@ A built-in component for rendering tool calls with expandable/collapsible output
 import { DiffPrimitive, DiffView } from "@assistant-ui/react-ink";
 ```
 
-Components for rendering code diffs in the terminal.
+Primitives for rendering unified diffs and file comparisons in the terminal.
+
+`DiffPrimitive.*` components are **unstyled** — they output plain structural content (indicators, line numbers, file names) without any color, bold, or dimColor attributes. Use `renderLine`/`renderFold` on `Content` to add your own styling.
+
+`DiffView` is a **styled** convenience component that handles parsing and provides default colors (green for additions, red for deletions, dimColor for line numbers and fold markers, bold for file names).
 
 ### DiffView
 
@@ -738,23 +742,23 @@ Pre-composed component that combines all diff primitives for easy diff rendering
 
 ### Root
 
-Container `Box` that provides diff context to child components. Parses the patch or computes the diff from old/new file content.
+Context provider `Box` for composing diff primitives. Accepts pre-parsed `ParsedFile[]` data.
 
 ```tsx
-<DiffPrimitive.Root
-  patch={patchString}
-  oldFile={{ content: oldContent, name: "file.txt" }}
-  newFile={{ content: newContent, name: "file.txt" }}
->
-  {children}
+import { DiffPrimitive, parsePatch } from "@assistant-ui/react-ink";
+
+const files = parsePatch(patchString);
+
+<DiffPrimitive.Root files={files}>
+  <DiffPrimitive.Header />
+  <DiffPrimitive.Content />
 </DiffPrimitive.Root>
 ```
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `patch` | `string` | Unified diff patch string |
-| `oldFile` | `{ content: string; name?: string }` | Old file for inline diff |
-| `newFile` | `{ content: string; name?: string }` | New file for inline diff |
+| `files` | `ParsedFile[]` | Pre-parsed diff file data |
+| `...rest` | `BoxProps` | Standard Ink Box props |
 
 ### Header
 
@@ -794,7 +798,7 @@ Renders the diff content with lines. Supports context folding and line truncatio
 
 ### Line
 
-Renders an individual diff line with appropriate coloring and indicators.
+Renders a single diff line with indicator (`+`/`-`/` `) and optional line number. Unstyled — no colors applied.
 
 ```tsx
 <DiffPrimitive.Line
@@ -824,10 +828,14 @@ Displays diff statistics (additions and deletions count).
 
 ### Composing with Primitives
 
-For custom layouts, use the primitives directly:
+For custom layouts, parse the patch first with `parsePatch` then pass the result to `DiffPrimitive.Root`:
 
 ```tsx
-<DiffPrimitive.Root patch={patchString}>
+import { DiffPrimitive, parsePatch } from "@assistant-ui/react-ink";
+
+const files = parsePatch(patchString);
+
+<DiffPrimitive.Root files={files}>
   <Box flexDirection="column">
     <DiffPrimitive.Header />
     <DiffPrimitive.Stats />
