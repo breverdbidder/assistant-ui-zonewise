@@ -5,9 +5,33 @@ description: Composable terminal components for building chat UIs with Ink.
 
 Primitives are thin wrappers around Ink components (`Box`, `Text`, `TextInput`) that integrate with the assistant-ui runtime. They accept all standard Ink props and add runtime-aware behavior.
 
-Primitives use namespace imports, the same pattern as the web package (e.g. `ThreadPrimitive.Root`, `ComposerPrimitive.Input`).
-
 Many primitives share their core logic with `@assistant-ui/react` via `@assistant-ui/core/react` — only the UI layer (Ink vs DOM) differs.
+
+## Import Styles
+
+Primitives support two import patterns.
+
+### Namespace Imports (Default)
+
+```tsx
+import { MessagePrimitive } from "@assistant-ui/react-ink";
+
+<MessagePrimitive.Root>
+  <MessagePrimitive.Content />
+</MessagePrimitive.Root>
+```
+
+### Direct Named Imports
+
+```tsx
+import { MessageRoot, MessageContent } from "@assistant-ui/react-ink";
+
+<MessageRoot>
+  <MessageContent />
+</MessageRoot>
+```
+
+Use direct named imports with bundlers that perform static tree-shaking (e.g., `bun build --compile`). These bundlers may drop namespace re-exports like `MessagePrimitive.Root` but preserve direct imports like `MessageRoot`.
 
 ## Thread
 
