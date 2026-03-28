@@ -131,6 +131,7 @@ import {
   ModelSelectorTrigger,
   ModelSelectorContent,
   ModelSelectorItem,
+  ModelSelectorValue,
 } from "@/components/assistant-ui/model-selector";
 
 <ModelSelectorRoot models={models} value={modelId} onValueChange={setModelId}>
@@ -146,6 +147,7 @@ import {
 | `ModelSelector.Trigger` | CVA-styled trigger showing current model |
 | `ModelSelector.Content` | Select content with model items |
 | `ModelSelector.Item` | Individual model option with icon, name, description |
+| `ModelSelector.Value` | Selected model display (SSR-safe, used inside Trigger) |
 
 ### ModelSelector
 
