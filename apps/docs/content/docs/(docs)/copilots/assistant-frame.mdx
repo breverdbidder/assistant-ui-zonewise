@@ -296,11 +296,13 @@ A flexible registry for managing model context with dynamic updates.
 
 Adds a tool and returns a handle for updates/removal.
 
+Tool parameters accept any [StandardSchemaV1](https://github.com/standard-schema/standard-schema)-compatible schema library (like Zod v4+, Valibot, or ArkType) or plain JSON Schema.
+
 ```tsx
 const handle = registry.addTool({
   toolName: string,
   description?: string,
-  parameters: ZodSchema | JSONSchema,
+  parameters: StandardSchemaV1 | JSONSchema,
   execute: (args, context) => Promise<any>,
 });
 
