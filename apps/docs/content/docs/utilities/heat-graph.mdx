@@ -5,7 +5,7 @@ description: Headless, composable activity heatmap components for React.
 
 import { HeatGraphDemo } from "@/app/heat-graph/heat-graph-demo";
 
-`heat-graph` provides headless, Radix-style primitives for building GitHub-style activity heatmap graphs.
+`@assistant-ui/heat-graph` provides headless, Radix-style primitives for building GitHub-style activity heatmap graphs.
 
 - **Composable** — Radix-style compound components you fully control
 - **Headless** — Zero styling opinions, bring your own CSS/Tailwind
@@ -21,21 +21,21 @@ import { HeatGraphDemo } from "@/app/heat-graph/heat-graph-demo";
     ```sh
     npx shadcn@latest add https://r.assistant-ui.com/heat-graph
     ```
-    This installs a pre-styled `HeatGraph` component to `components/assistant-ui/heat-graph.tsx` along with the `heat-graph` package.
+    This installs a pre-styled `HeatGraph` component to `components/assistant-ui/heat-graph.tsx` along with the `@assistant-ui/heat-graph` package.
   </Tab>
   <Tab value="npm">
     ```sh
-    npm install heat-graph
+    npm install @assistant-ui/heat-graph
     ```
   </Tab>
   <Tab value="pnpm">
     ```sh
-    pnpm add heat-graph
+    pnpm add @assistant-ui/heat-graph
     ```
   </Tab>
   <Tab value="yarn">
     ```sh
-    yarn add heat-graph
+    yarn add @assistant-ui/heat-graph
     ```
   </Tab>
 </Tabs>
@@ -45,7 +45,7 @@ import { HeatGraphDemo } from "@/app/heat-graph/heat-graph-demo";
 ```tsx title="components/activity-graph.tsx"
 "use client";
 
-import * as HeatGraph from "heat-graph";
+import * as HeatGraph from "@assistant-ui/heat-graph";
 
 const COLORS = ["#ebedf0", "#c6d7f9", "#8fb0f3", "#5888e8", "#2563eb"];
 
@@ -76,7 +76,7 @@ export function ActivityGraph({ data }: { data: HeatGraph.DataPoint[] }) {
 ## Anatomy
 
 ```tsx
-import * as HeatGraph from "heat-graph";
+import * as HeatGraph from "@assistant-ui/heat-graph";
 
 <HeatGraph.Root data={data} colorScale={colors}>
 
