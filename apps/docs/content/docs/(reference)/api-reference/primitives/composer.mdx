@@ -186,13 +186,28 @@ This primitive renders a `<button>` element unless `asChild` is set.
 
 Renders attachments. This primitive renders a separate component for each attachment.
 
+```tsx
+<ComposerPrimitive.Attachments>
+  {({ attachment }) => {
+    if (attachment.type === "image") return <MyImageAttachment />;
+    if (attachment.type === "document") return <MyDocumentAttachment />;
+    return <MyFallbackAttachment />;
+  }}
+</ComposerPrimitive.Attachments>
+```
+
 <ParametersTable
   type="ComposerPrimitiveAttachmentsProps"
   parameters={[
     {
+      name: "children",
+      type: "(value: { attachment: Attachment }) => ReactNode",
+      description: "Render function called for each attachment. Receives the attachment object.",
+    },
+    {
       name: "components",
       type: "ComposerAttachmentsComponents",
-      description: "The component to render for each attachment.",
+      description: "The component to render for each attachment. Deprecated in favor of children render function.",
       children: [
         {
           type: "ComposerPrimitiveAttachmentsProps['components']",
@@ -230,13 +245,12 @@ Renders attachments. This primitive renders a separate component for each attach
 Renders a single attachment at the specified index within the composer.
 
 ```tsx
-<ComposerPrimitive.AttachmentByIndex
-  index={0}
-  components={{
-    Image: MyImageAttachment,
-    Document: MyDocumentAttachment
+<ComposerPrimitive.AttachmentByIndex index={0}>
+  {({ attachment }) => {
+    if (attachment.type === "image") return <MyImageAttachment />;
+    return <MyDocumentAttachment />;
   }}
-/>
+</ComposerPrimitive.AttachmentByIndex>
 ```
 
 <ParametersTable
