@@ -223,17 +223,7 @@ A2A agents can produce artifacts (files, code, data) alongside their responses. 
 
 The runtime supports:
 - **Incremental artifact streaming** via `append` mode
-- **Artifact completion notification** via `onArtifactComplete` callback
 - **Automatic reset** of artifacts on each new run
-
-```tsx
-const runtime = useA2ARuntime({
-  baseUrl: "http://localhost:9999",
-  onArtifactComplete: (artifact) => {
-    console.log("Artifact ready:", artifact.name);
-  },
-});
-```
 
 ## Streaming vs Non-Streaming
 
