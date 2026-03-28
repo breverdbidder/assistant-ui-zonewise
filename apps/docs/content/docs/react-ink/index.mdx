@@ -1,0 +1,198 @@
+---
+title: Getting Started
+description: Build AI chat interfaces for the terminal with @assistant-ui/react-ink.
+---
+
+## Overview
+
+`@assistant-ui/react-ink` brings assistant-ui to the terminal. It provides composable primitives, reactive hooks, and a local runtime — the same layered architecture as the web package, built on [React Ink](https://github.com/vadimdemedes/ink) components (`Box`, `Text`, `useFocus`, `useInput`).
+
+**Key features:**
+
+- **Primitives** — `Thread`, `Composer`, `Message`, `ThreadList`, `ThreadListItem`, `ChainOfThought`, `Suggestion`, `ActionBar`, `BranchPicker`, `Attachment` components that compose with standard Ink props
+- **Reactive state** — `useAuiState` with selector support for fine-grained re-renders
+- **Local runtime** — `useLocalRuntime` with pluggable `ChatModelAdapter` for any LLM API
+- **Thread management** — Multi-thread support with create, switch, rename, delete
+- **Tool system** — `useAssistantTool`, `makeAssistantTool` for registering tools with custom UI renderers
+- **Persistence** — `createLocalStorageAdapter` for async storage-based thread persistence
+
+<Callout type="info">
+  `@assistant-ui/react-ink` shares its runtime core with `@assistant-ui/react` via `@assistant-ui/core`. The type system, state management, and runtime logic are identical — only the UI layer differs.
+</Callout>
+
+## Getting Started
+
+This guide walks through building a terminal chat app. You can substitute any LLM provider.
+
+<Steps>
+  <Step>
+
+### Install dependencies
+
+```sh
+npm install @assistant-ui/react-ink ink react
+```
+
+  </Step>
+  <Step>
+
+### Create a ChatModelAdapter
+
+The adapter connects your LLM API to the runtime. Here's an example that echoes user input:
+
+```tsx title="src/adapter.ts"
+import type { ChatModelAdapter } from "@assistant-ui/react-ink";
+
+export const createDemoAdapter = (): ChatModelAdapter => ({
+  async *run({ messages }) {
+    const lastUserMessage = messages.filter((m) => m.role === "user").at(-1);
+
+    const userText =
+      lastUserMessage?.content
+        .filter((p) => p.type === "text")
+        .map((p) => ("text" in p ? p.text : ""))
+        .join("") ?? "";
+
+    // Simulate streaming by yielding word by word
+    const response = `You said: "${userText}". This is a demo response!`;
+    const words = response.split(" ");
+
+    let accumulated = "";
+    for (const word of words) {
+      accumulated += (accumulated ? " " : "") + word;
+      yield { content: [{ type: "text" as const, text: accumulated }] };
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  },
+});
+```
+
+  </Step>
+  <Step>
+
+### Build the UI
+
+```tsx title="src/app.tsx"
+import { useMemo } from "react";
+import { Box, Text } from "ink";
+import {
+  AssistantProvider,
+  useLocalRuntime,
+  ThreadRoot,
+  ThreadMessages,
+  ThreadEmpty,
+  ComposerInput,
+  useThreadIsRunning,
+  type ThreadMessage,
+} from "@assistant-ui/react-ink";
+import { createDemoAdapter } from "./adapter.js";
+
+const Message = ({ message }: { message: ThreadMessage }) => {
+  const isUser = message.role === "user";
+  const text = message.content
+    .filter((p) => p.type === "text")
+    .map((p) => ("text" in p ? p.text : ""))
+    .join("");
+
+  return (
+    <Box marginBottom={1}>
+      <Text bold color={isUser ? "green" : "blue"}>
+        {isUser ? "You" : "AI"}:{" "}
+      </Text>
+      <Text wrap="wrap">{text}</Text>
+    </Box>
+  );
+};
+
+const StatusIndicator = () => {
+  const isRunning = useThreadIsRunning();
+  if (!isRunning) return null;
+  return (
+    <Box marginBottom={1}>
+      <Text color="yellow">Thinking...</Text>
+    </Box>
+  );
+};
+
+const Thread = () => {
+  return (
+    <ThreadRoot>
+      <ThreadEmpty>
+        <Box marginBottom={1}>
+          <Text dimColor>No messages yet. Start typing below!</Text>
+        </Box>
+      </ThreadEmpty>
+
+      <ThreadMessages renderMessage={(props) => <Message {...props} />} />
+
+      <StatusIndicator />
+
+      <Box borderStyle="round" borderColor="gray" paddingX={1}>
+        <Text color="gray">{"> "}</Text>
+        <ComposerInput
+          submitOnEnter
+          placeholder="Type a message..."
+          autoFocus
+        />
+      </Box>
+    </ThreadRoot>
+  );
+};
+
+export const App = () => {
+  const adapter = useMemo(() => createDemoAdapter(), []);
+  const runtime = useLocalRuntime(adapter);
+
+  return (
+    <AssistantProvider runtime={runtime}>
+      <Box flexDirection="column" padding={1}>
+        <Text bold color="cyan">
+          Terminal Chat
+        </Text>
+        <Text dimColor>
+          Type a message and press Enter to send. Ctrl+C to exit.
+        </Text>
+        <Box marginTop={1}>
+          <Thread />
+        </Box>
+      </Box>
+    </AssistantProvider>
+  );
+};
+```
+
+  </Step>
+  <Step>
+
+### Run the app
+
+```tsx title="src/index.tsx"
+import { render } from "ink";
+import { App } from "./app.js";
+
+render(<App />);
+```
+
+```sh
+npx tsx src/index.tsx
+```
+
+  </Step>
+</Steps>
+
+## Architecture
+
+```
+useLocalRuntime(chatModel, options?)
+  └─ AssistantProvider
+       ├─ useAuiState((s) => s.thread)    → thread state (messages, isRunning, …)
+       ├─ useAuiState((s) => s.composer)   → composer state (text, isEmpty, …)
+       ├─ useAuiState((s) => s.message)    → single message state (inside renderMessage)
+       └─ Primitives                       → ThreadRoot, ComposerInput, MessageContent, …
+```
+
+The runtime core is shared with `@assistant-ui/react` — only the UI primitives are terminal-specific.
+
+## Example
+
+For a complete example, see the [`with-react-ink` example](https://github.com/assistant-ui/assistant-ui/tree/main/examples/with-react-ink).

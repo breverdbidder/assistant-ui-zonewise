@@ -1,0 +1,141 @@
+---
+title: Markdown
+description: Render rich markdown text in the terminal with syntax highlighting support.
+links:
+  - label: markdansi
+    url: https://github.com/vercel/markdansi
+---
+
+`@assistant-ui/react-ink-markdown` renders markdown as formatted ANSI terminal output. It wraps [markdansi](https://github.com/vercel/markdansi) and follows the same pattern as `@assistant-ui/react-markdown` and `@assistant-ui/react-streamdown` for the web.
+
+**Key features:**
+
+- **Rich markdown** — Headings, bold, italic, lists, tables, code blocks, blockquotes, and links
+- **Syntax highlighting** — Optional Shiki integration via `useShikiHighlighter`
+- **Customizable** — Theme, width, code box styling, table borders, and more
+
+## Installation
+
+```sh
+npm install @assistant-ui/react-ink-markdown
+```
+
+For syntax highlighting, also install Shiki:
+
+```sh
+npm install shiki
+```
+
+## Basic Usage
+
+Use `MarkdownText` directly when you have the text content:
+
+```tsx
+import { MarkdownText } from "@assistant-ui/react-ink-markdown";
+
+const AssistantMessage = ({ text }: { text: string }) => {
+  return <MarkdownText text={text} />;
+};
+```
+
+## With Runtime Context
+
+`MarkdownTextPrimitive` reads text from the runtime automatically — use it inside `MessagePrimitiveParts`:
+
+```tsx
+import { MarkdownTextPrimitive } from "@assistant-ui/react-ink-markdown";
+import { MessagePrimitiveParts } from "@assistant-ui/react-ink";
+
+const Message = () => {
+  return (
+    <MessagePrimitiveParts components={{ Text: MarkdownTextPrimitive }} />
+  );
+};
+```
+
+## Syntax Highlighting
+
+Add syntax highlighting to code blocks with Shiki:
+
+```tsx
+import { MarkdownText, useShikiHighlighter } from "@assistant-ui/react-ink-markdown";
+
+const AssistantMessage = ({ text }: { text: string }) => {
+  const highlighter = useShikiHighlighter({ theme: "github-dark" });
+
+  return <MarkdownText text={text} highlighter={highlighter} />;
+};
+```
+
+`useShikiHighlighter` preloads common languages by default. Customize which languages to load:
+
+```tsx
+const highlighter = useShikiHighlighter({
+  theme: "github-dark",
+  langs: ["typescript", "javascript", "python", "bash", "json"],
+});
+```
+
+## API Reference
+
+### MarkdownText
+
+Renders markdown text as formatted ANSI terminal output.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `text` | `string` | — | The markdown text to render (required) |
+| `highlighter` | `(code: string, lang?: string) => string` | — | Syntax highlighting function |
+| `theme` | `ThemeName \| Theme` | — | markdansi theme name or custom theme object |
+| `width` | `number` | stdout.columns or 80 | Terminal width for wrapping |
+| `wrap` | `boolean` | `true` | Enable word wrapping |
+| `codeBox` | `boolean` | `true` | Draw border around fenced code blocks |
+| `codeGutter` | `boolean` | `false` | Show line numbers in code blocks |
+| `codeWrap` | `boolean` | `true` | Wrap long lines in code blocks |
+| `hyperlinks` | `boolean` | auto-detect | Enable OSC 8 hyperlinks |
+| `tableBorder` | `"unicode" \| "ascii" \| "none"` | — | Table border style |
+| `tablePadding` | `number` | — | Table cell padding |
+| `tableDense` | `boolean` | — | Dense table rendering |
+| `quotePrefix` | `string` | `"│ "` | Blockquote prefix |
+| `listIndent` | `number` | `2` | List indentation |
+
+### MarkdownTextPrimitive
+
+Auto-wired markdown text primitive that reads text from the runtime context. Use inside `MessagePrimitiveParts`.
+
+Accepts all `MarkdownText` props except `text` (which is read from context), plus:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `preprocess` | `(text: string) => string` | Transform the text before rendering |
+
+### useShikiHighlighter
+
+Initializes a Shiki highlighter for syntax highlighting.
+
+```tsx
+const highlighter = useShikiHighlighter(options?);
+```
+
+**Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `theme` | `string` | `"github-dark"` | Shiki theme name |
+| `langs` | `string[]` | Common web/systems languages | Languages to preload |
+
+**Returns:** `((code: string, lang?: string) => string) | undefined`
+
+Returns `undefined` while loading. Pass a stable array reference for `langs` to avoid re-initializing the highlighter on every render.
+
+## Re-exported Types
+
+The package re-exports useful types from markdansi:
+
+```tsx
+import type { Theme, ThemeName, RenderOptions } from "@assistant-ui/react-ink-markdown";
+```
+
+## Related
+
+- [`with-react-ink` example](https://github.com/assistant-ui/assistant-ui/tree/main/examples/with-react-ink) — Complete example with markdown rendering

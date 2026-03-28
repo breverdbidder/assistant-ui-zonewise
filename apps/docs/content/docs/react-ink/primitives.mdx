@@ -1,0 +1,599 @@
+---
+title: Primitives
+description: Composable components for building terminal chat UIs.
+---
+
+All primitives are built on [React Ink](https://github.com/vadimdemedes/ink) components and accept standard Ink props.
+
+## Thread
+
+### ThreadRoot
+
+Container for thread content.
+
+```tsx
+import { ThreadRoot } from "@assistant-ui/react-ink";
+import { Box } from "ink";
+
+<ThreadRoot>
+  {/* Thread content */}
+</ThreadRoot>
+```
+
+### ThreadMessages
+
+Renders messages with a custom component.
+
+```tsx
+import { ThreadMessages } from "@assistant-ui/react-ink";
+
+<ThreadMessages
+  renderMessage={({ message, index }) => (
+    <MyMessage message={message} />
+  )}
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `renderMessage` | `(props: { message: ThreadMessage; index: number }) => ReactElement` | Render function for each message |
+
+### ThreadEmpty
+
+Renders children when the thread has no messages.
+
+```tsx
+import { ThreadEmpty } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+<ThreadEmpty>
+  <Text dimColor>No messages yet. Start typing!</Text>
+</ThreadEmpty>
+```
+
+### ThreadIf
+
+Conditional rendering based on thread state.
+
+```tsx
+import { ThreadIf } from "@assistant-ui/react-ink";
+
+<ThreadIf running>
+  <Text>Generating...</Text>
+</ThreadIf>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `running` | `boolean` | Show when model is running |
+| `empty` | `boolean` | Show when thread is empty |
+
+## Composer
+
+### ComposerRoot
+
+Container for composer content.
+
+```tsx
+import { ComposerRoot } from "@assistant-ui/react-ink";
+
+<ComposerRoot>
+  {/* Composer content */}
+</ComposerRoot>
+```
+
+### ComposerInput
+
+Text input for the composer. Handles keyboard input via Ink's `useInput`.
+
+```tsx
+import { ComposerInput } from "@assistant-ui/react-ink";
+
+<ComposerInput
+  submitOnEnter
+  placeholder="Type a message..."
+  autoFocus
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `submitOnEnter` | `boolean` | `false` | Submit on Enter key |
+| `placeholder` | `string` | `""` | Placeholder text |
+| `autoFocus` | `boolean` | `true` | Auto-focus on mount |
+
+### ComposerSend
+
+Button to send the message.
+
+```tsx
+import { ComposerSend } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+<ComposerSend>
+  <Text>[Send]</Text>
+</ComposerSend>
+```
+
+### ComposerCancel
+
+Button to cancel the current run.
+
+```tsx
+import { ComposerCancel } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+<ComposerCancel>
+  <Text>[Cancel]</Text>
+</ComposerCancel>
+```
+
+### ComposerAttachments
+
+Renders composer attachments.
+
+```tsx
+import { ComposerAttachments } from "@assistant-ui/react-ink";
+
+<ComposerAttachments
+  components={{
+    Attachment: MyAttachment,
+  }}
+/>
+```
+
+### EditComposerInput
+
+Text input for editing messages.
+
+```tsx
+import { EditComposerInput } from "@assistant-ui/react-ink";
+
+<EditComposerInput placeholder="Edit message..." />
+```
+
+### EditComposerSend / EditComposerCancel
+
+Buttons for edit mode.
+
+```tsx
+import { EditComposerSend, EditComposerCancel } from "@assistant-ui/react-ink";
+
+<EditComposerSend>
+  <Text>[Save]</Text>
+</EditComposerSend>
+
+<EditComposerCancel>
+  <Text>[Cancel]</Text>
+</EditComposerCancel>
+```
+
+## Message
+
+### MessageRoot
+
+Container for message content.
+
+```tsx
+import { MessageRoot } from "@assistant-ui/react-ink";
+
+<MessageRoot>
+  {/* Message content */}
+</MessageRoot>
+```
+
+### MessageContent
+
+Renders message parts with custom renderers.
+
+```tsx
+import { MessageContent } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+<MessageContent
+  renderText={({ part }) => <Text>{part.text}</Text>}
+  renderToolCall={({ part }) => <Text>[Tool: {part.toolName}]</Text>}
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `renderText` | `(props) => ReactElement` | Custom text renderer |
+| `renderToolCall` | `(props) => ReactElement` | Custom tool call renderer |
+| `renderImage` | `(props) => ReactElement` | Custom image renderer |
+| `renderReasoning` | `(props) => ReactElement` | Custom reasoning renderer |
+| `renderSource` | `(props) => ReactElement` | Custom source renderer |
+| `renderFile` | `(props) => ReactElement` | Custom file renderer |
+| `renderData` | `(props) => ReactElement` | Custom data renderer |
+
+### MessagePrimitiveParts
+
+Lower-level component for rendering message parts.
+
+```tsx
+import { MessagePrimitiveParts } from "@assistant-ui/react-ink";
+
+<MessagePrimitiveParts
+  components={{
+    Text: MyTextComponent,
+  }}
+/>
+```
+
+### MessageIf
+
+Conditional rendering based on message state.
+
+```tsx
+import { MessageIf } from "@assistant-ui/react-ink";
+
+<MessageIf user>
+  <Text color="green">User message</Text>
+</MessageIf>
+
+<MessageIf assistant>
+  <Text color="blue">Assistant message</Text>
+</MessageIf>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `user` | `boolean` | Show for user messages |
+| `assistant` | `boolean` | Show for assistant messages |
+| `running` | `boolean` | Show when message is generating |
+| `last` | `boolean` | Show for last message |
+
+### MessageAttachments
+
+Renders message attachments.
+
+```tsx
+import { MessageAttachments } from "@assistant-ui/react-ink";
+
+<MessageAttachments
+  components={{
+    Attachment: MyAttachment,
+  }}
+/>
+```
+
+## Action Bar
+
+Components for message actions (copy, edit, reload, feedback).
+
+### ActionBarCopy
+
+```tsx
+import { ActionBarCopy } from "@assistant-ui/react-ink";
+
+<ActionBarCopy copyToClipboard={(text) => { /* ... */ }}>
+  {({ isCopied }) => (
+    <Text>{isCopied ? "[Copied]" : "[Copy]"}</Text>
+  )}
+</ActionBarCopy>
+```
+
+### ActionBarEdit
+
+```tsx
+import { ActionBarEdit } from "@assistant-ui/react-ink";
+
+<ActionBarEdit>
+  <Text>[Edit]</Text>
+</ActionBarEdit>
+```
+
+### ActionBarReload
+
+```tsx
+import { ActionBarReload } from "@assistant-ui/react-ink";
+
+<ActionBarReload>
+  <Text>[Reload]</Text>
+</ActionBarReload>
+```
+
+### ActionBarFeedbackPositive / ActionBarFeedbackNegative
+
+```tsx
+import {
+  ActionBarFeedbackPositive,
+  ActionBarFeedbackNegative,
+} from "@assistant-ui/react-ink";
+
+<ActionBarFeedbackPositive>
+  {({ isSubmitted }) => (
+    <Text>{isSubmitted ? "[👍]" : "[+]"}</Text>
+  )}
+</ActionBarFeedbackPositive>
+
+<ActionBarFeedbackNegative>
+  {({ isSubmitted }) => (
+    <Text>{isSubmitted ? "[👎]" : "[-]"}</Text>
+  )}
+</ActionBarFeedbackNegative>
+```
+
+## Branch Picker
+
+Navigate between message branches.
+
+```tsx
+import {
+  BranchPickerPrevious,
+  BranchPickerNext,
+  BranchPickerNumber,
+  BranchPickerCount,
+} from "@assistant-ui/react-ink";
+import { Box, Text } from "ink";
+
+<Box>
+  <BranchPickerPrevious>
+    <Text>{"<"}</Text>
+  </BranchPickerPrevious>
+  <Text>
+    <BranchPickerNumber /> / <BranchPickerCount />
+  </Text>
+  <BranchPickerNext>
+    <Text>{">"}</Text>
+  </BranchPickerNext>
+</Box>
+```
+
+## Thread List
+
+### ThreadListRoot
+
+Container for the thread list.
+
+```tsx
+import { ThreadListRoot } from "@assistant-ui/react-ink";
+
+<ThreadListRoot>
+  {/* Thread list content */}
+</ThreadListRoot>
+```
+
+### ThreadListItems
+
+Renders thread list items.
+
+```tsx
+import { ThreadListItems } from "@assistant-ui/react-ink";
+
+<ThreadListItems
+  renderThreadListItem={(props) => (
+    <MyThreadListItem {...props} />
+  )}
+/>
+```
+
+### ThreadListNew
+
+Button to create a new thread.
+
+```tsx
+import { ThreadListNew } from "@assistant-ui/react-ink";
+
+<ThreadListNew>
+  <Text>[+ New Thread]</Text>
+</ThreadListNew>
+```
+
+## Thread List Item
+
+### ThreadListItemRoot
+
+Container for a thread list item.
+
+```tsx
+import { ThreadListItemRoot } from "@assistant-ui/react-ink";
+
+<ThreadListItemRoot>
+  {/* Item content */}
+</ThreadListItemRoot>
+```
+
+### ThreadListItemTitle
+
+Displays the thread title.
+
+```tsx
+import { ThreadListItemTitle } from "@assistant-ui/react-ink";
+
+<ThreadListItemTitle />
+```
+
+### ThreadListItemTrigger
+
+Makes the item clickable to switch threads.
+
+```tsx
+import { ThreadListItemTrigger } from "@assistant-ui/react-ink";
+
+<ThreadListItemTrigger>
+  <Text>Thread Title</Text>
+</ThreadListItemTrigger>
+```
+
+### ThreadListItemArchive / ThreadListItemUnarchive / ThreadListItemDelete
+
+Actions for thread management.
+
+```tsx
+import {
+  ThreadListItemArchive,
+  ThreadListItemUnarchive,
+  ThreadListItemDelete,
+} from "@assistant-ui/react-ink";
+
+<ThreadListItemArchive>
+  <Text>[Archive]</Text>
+</ThreadListItemArchive>
+```
+
+## Attachment
+
+### AttachmentRoot
+
+Container for an attachment.
+
+```tsx
+import { AttachmentRoot } from "@assistant-ui/react-ink";
+
+<AttachmentRoot>
+  {/* Attachment content */}
+</AttachmentRoot>
+```
+
+### AttachmentName
+
+Displays the attachment name.
+
+```tsx
+import { AttachmentName } from "@assistant-ui/react-ink";
+
+<AttachmentName />
+```
+
+### AttachmentThumb
+
+Displays the file extension.
+
+```tsx
+import { AttachmentThumb } from "@assistant-ui/react-ink";
+
+<AttachmentThumb />
+```
+
+### AttachmentRemove
+
+Button to remove an attachment.
+
+```tsx
+import { AttachmentRemove } from "@assistant-ui/react-ink";
+
+<AttachmentRemove>
+  <Text>[x]</Text>
+</AttachmentRemove>
+```
+
+## Suggestion
+
+### SuggestionTrigger
+
+Makes a suggestion clickable.
+
+```tsx
+import { SuggestionTrigger, SuggestionTitle } from "@assistant-ui/react-ink";
+
+<SuggestionTrigger>
+  <SuggestionTitle />
+</SuggestionTrigger>
+```
+
+### SuggestionTitle / SuggestionDescription
+
+Display suggestion content.
+
+```tsx
+import { SuggestionTitle, SuggestionDescription } from "@assistant-ui/react-ink";
+
+<SuggestionTitle />
+<SuggestionDescription />
+```
+
+## Chain of Thought
+
+### ChainOfThoughtRoot
+
+Container for chain of thought content.
+
+```tsx
+import { ChainOfThoughtRoot } from "@assistant-ui/react-ink";
+
+<ChainOfThoughtRoot>
+  {/* Content */}
+</ChainOfThoughtRoot>
+```
+
+### ChainOfThoughtAccordionTrigger
+
+Toggle for expanding/collapsing chain of thought.
+
+```tsx
+import { ChainOfThoughtAccordionTrigger } from "@assistant-ui/react-ink";
+
+<ChainOfThoughtAccordionTrigger>
+  <Text>[Toggle]</Text>
+</ChainOfThoughtAccordionTrigger>
+```
+
+## Tool Call
+
+### ToolFallback
+
+Renders a tool call with status indicators and collapsible details. Used as the default fallback when no custom tool UI is registered.
+
+```tsx
+import { ToolFallback } from "@assistant-ui/react-ink";
+
+<ToolFallback
+  toolName="search"
+  args={{ query: "weather" }}
+  argsText='{"query":"weather"}'
+/>
+```
+
+Auto-expands while running, waiting for approval, or errored; collapses when complete.
+
+#### Status Indicators
+
+| Status | Icon | Color |
+|--------|------|-------|
+| `running` | Animated spinner | Yellow |
+| `complete` | `+` | Green |
+| `error` | `x` | Red |
+| `requires-action` | `?` | Cyan |
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `toolName` | `string` | Name of the tool being called |
+| `args` | `unknown` | Parsed tool arguments |
+| `argsText` | `string` | Raw JSON text of tool arguments |
+| `result` | `unknown` | Tool result (if complete) |
+| `isError` | `boolean` | Whether the result is an error |
+| `status` | `ToolCallMessagePartStatus` | Tool call status from runtime |
+| `expanded` | `boolean` | Force expanded/collapsed state |
+| `maxArgLines` | `number` | Maximum lines for args when expanded (default: 20) |
+| `maxResultLines` | `number` | Maximum lines for result when expanded (default: 20) |
+| `maxResultPreviewLines` | `number` | Maximum lines for result preview when collapsed (default: 1) |
+| `renderHeader` | `(props) => ReactNode` | Custom header renderer |
+| `renderArgs` | `(props) => ReactNode` | Custom args renderer |
+| `renderResult` | `(props) => ReactNode` | Custom result renderer |
+
+#### Custom Renderers
+
+```tsx
+import { ToolFallback } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+<ToolFallback
+  toolName="search"
+  args={{ query: "weather" }}
+  argsText='{"query":"weather"}'
+  renderHeader={({ toolName, status, expanded }) => (
+    <Text bold color={status === "error" ? "red" : "white"}>
+      {toolName} ({status})
+    </Text>
+  )}
+  renderArgs={({ args, argsText }) => (
+    <Text dimColor>{argsText}</Text>
+  )}
+  renderResult={({ result, isError }) => (
+    <Text color={isError ? "red" : "green"}>
+      {JSON.stringify(result)}
+    </Text>
+  )}
+/>
+```

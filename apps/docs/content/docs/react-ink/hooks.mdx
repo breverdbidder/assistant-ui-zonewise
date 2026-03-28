@@ -1,0 +1,328 @@
+---
+title: Hooks
+description: Reactive hooks for accessing runtime state in React Ink.
+---
+
+## Store Hooks
+
+### useAui
+
+Get the assistant-ui client for imperative actions.
+
+```tsx
+import { useAui } from "@assistant-ui/react-ink";
+
+const aui = useAui();
+
+// Send a message
+aui.composer().send();
+
+// Cancel a run
+aui.threads().thread("main").cancelRun();
+
+// Access message methods
+aui.message().reload();
+```
+
+### useAuiState
+
+Subscribe to state changes with an optional selector for fine-grained re-renders.
+
+```tsx
+import { useAuiState } from "@assistant-ui/react-ink";
+
+// Thread state
+const messages = useAuiState((s) => s.thread.messages);
+const isRunning = useAuiState((s) => s.thread.isRunning);
+const isEmpty = useAuiState((s) => s.thread.isEmpty);
+
+// Composer state
+const text = useAuiState((s) => s.composer.text);
+const composerIsEmpty = useAuiState((s) => s.composer.isEmpty);
+
+// Message state (inside renderMessage callback)
+const role = useAuiState((s) => s.message.role);
+const isLast = useAuiState((s) => s.message.isLast);
+```
+
+### useAuiEvent
+
+Subscribe to events.
+
+```tsx
+import { useAuiEvent } from "@assistant-ui/react-ink";
+
+useAuiEvent("thread.run.create", (payload) => {
+  console.log("Run started:", payload);
+});
+```
+
+## Runtime Hooks
+
+### useLocalRuntime
+
+Create an `AssistantRuntime` with a `ChatModelAdapter`.
+
+```tsx
+import { useLocalRuntime } from "@assistant-ui/react-ink";
+
+const runtime = useLocalRuntime(chatModel, {
+  initialMessages: [],
+});
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `initialMessages` | `ThreadMessageLike[]` | Messages to pre-populate |
+
+### useRemoteThreadListRuntime
+
+Create an `AssistantRuntime` with a remote thread list adapter for persistence.
+
+```tsx
+import {
+  useRemoteThreadListRuntime,
+  createLocalStorageAdapter,
+} from "@assistant-ui/react-ink";
+
+const adapter = createLocalStorageAdapter({
+  storage: yourAsyncStorage,
+});
+
+const runtime = useRemoteThreadListRuntime({
+  runtimeOptions: { adapter: chatModel },
+  adapters: { threadList: adapter },
+});
+```
+
+### useAssistantRuntime
+
+Get the `AssistantRuntime` from context.
+
+```tsx
+import { useAssistantRuntime } from "@assistant-ui/react-ink";
+
+const runtime = useAssistantRuntime();
+```
+
+## Primitive Hooks
+
+### useThreadMessages
+
+Get all messages in the current thread.
+
+```tsx
+import { useThreadMessages } from "@assistant-ui/react-ink";
+
+const messages = useThreadMessages(); // ThreadMessage[]
+```
+
+### useThreadIsRunning
+
+Check if the model is currently generating.
+
+```tsx
+import { useThreadIsRunning } from "@assistant-ui/react-ink";
+
+const isRunning = useThreadIsRunning(); // boolean
+```
+
+### useThreadIsEmpty
+
+Check if the thread has no messages.
+
+```tsx
+import { useThreadIsEmpty } from "@assistant-ui/react-ink";
+
+const isEmpty = useThreadIsEmpty(); // boolean
+```
+
+### useComposerSend
+
+Send the current composer content.
+
+```tsx
+import { useComposerSend } from "@assistant-ui/react-ink";
+
+const { send, canSend } = useComposerSend();
+```
+
+### useComposerCancel
+
+Cancel the current run.
+
+```tsx
+import { useComposerCancel } from "@assistant-ui/react-ink";
+
+const { cancel, canCancel } = useComposerCancel();
+```
+
+### useComposerAddAttachment
+
+Add an attachment to the composer.
+
+```tsx
+import { useComposerAddAttachment } from "@assistant-ui/react-ink";
+
+const { addAttachment } = useComposerAddAttachment();
+
+// Add a file or CreateAttachment object
+await addAttachment(file);
+```
+
+### useMessageReload
+
+Reload an assistant message.
+
+```tsx
+import { useMessageReload } from "@assistant-ui/react-ink";
+
+const { reload, canReload } = useMessageReload();
+```
+
+### useMessageBranching
+
+Navigate between message branches.
+
+```tsx
+import { useMessageBranching } from "@assistant-ui/react-ink";
+
+const { branchNumber, branchCount, goToPrev, goToNext } =
+  useMessageBranching();
+```
+
+## Action Bar Hooks
+
+### useActionBarCopy
+
+Copy message content.
+
+```tsx
+import { useActionBarCopy } from "@assistant-ui/react-ink";
+
+const { copy, disabled, isCopied } = useActionBarCopy({
+  copiedDuration: 3000,
+  copyToClipboard: (text) => {
+    // Your clipboard implementation
+  },
+});
+```
+
+### useActionBarEdit
+
+Enter edit mode for a message.
+
+```tsx
+import { useActionBarEdit } from "@assistant-ui/react-ink";
+
+const { edit, disabled } = useActionBarEdit();
+```
+
+### useActionBarReload
+
+Reload an assistant message.
+
+```tsx
+import { useActionBarReload } from "@assistant-ui/react-ink";
+
+const { reload, disabled } = useActionBarReload();
+```
+
+### useActionBarFeedbackPositive / useActionBarFeedbackNegative
+
+Submit feedback for a message.
+
+```tsx
+import {
+  useActionBarFeedbackPositive,
+  useActionBarFeedbackNegative,
+} from "@assistant-ui/react-ink";
+
+const { submit: submitPositive, isSubmitted: isPositive } =
+  useActionBarFeedbackPositive();
+
+const { submit: submitNegative, isSubmitted: isNegative } =
+  useActionBarFeedbackNegative();
+```
+
+## Edit Composer Hooks
+
+### useEditComposerSend
+
+Send edited message content.
+
+```tsx
+import { useEditComposerSend } from "@assistant-ui/react-ink";
+
+const { send, disabled } = useEditComposerSend();
+```
+
+### useEditComposerCancel
+
+Cancel editing.
+
+```tsx
+import { useEditComposerCancel } from "@assistant-ui/react-ink";
+
+const { cancel } = useEditComposerCancel();
+```
+
+## Model Context Hooks
+
+### useAssistantTool
+
+Register a tool with an optional UI renderer.
+
+```tsx
+import { useAssistantTool } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+useAssistantTool({
+  toolName: "get_weather",
+  description: "Get the current weather for a city",
+  parameters: {
+    type: "object",
+    properties: {
+      city: { type: "string" },
+    },
+    required: ["city"],
+  },
+  execute: async ({ city }) => {
+    const res = await fetch(`https://api.weather.example/${city}`);
+    return res.json();
+  },
+  render: ({ args, result }) => (
+    <Text>{args.city}: {result?.temperature}°F</Text>
+  ),
+});
+```
+
+### useAssistantToolUI
+
+Register only a UI renderer for a tool.
+
+```tsx
+import { useAssistantToolUI } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+useAssistantToolUI({
+  toolName: "get_weather",
+  render: ({ args, result, status }) => (
+    <Text>
+      {status?.type === "running"
+        ? `Loading weather for ${args.city}...`
+        : `${args.city}: ${result?.temperature}°F`}
+    </Text>
+  ),
+});
+```
+
+### useAssistantInstructions
+
+Register system instructions.
+
+```tsx
+import { useAssistantInstructions } from "@assistant-ui/react-ink";
+
+useAssistantInstructions("You are a helpful terminal assistant.");
+```
