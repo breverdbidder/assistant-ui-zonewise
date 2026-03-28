@@ -31,17 +31,22 @@ Container `Box` for the thread area.
 
 ### Messages
 
-Renders the message list with automatic runtime integration. Each message is wrapped in a scoped context so that `useAuiState((s) => s.message)` works inside the message component.
+Renders the message list with automatic runtime integration. Each message is wrapped in a scoped context so that `useAuiState((s) => s.message)` works inside message components.
 
 ```tsx
-<ThreadPrimitive.Messages>
-  {() => <MyMessage />}
-</ThreadPrimitive.Messages>
+<ThreadPrimitive.Messages
+  components={{
+    UserMessage: MyUserMessage,
+    AssistantMessage: MyAssistantMessage,
+  }}
+/>
 ```
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `components` | `MessageComponents` | Component map with `Message`, `UserMessage`, `AssistantMessage`, `SystemMessage`, and edit composer variants |
+| `components` | `{ Message?, UserMessage?, AssistantMessage?, SystemMessage?, EditComposer?, ... }` | Component renderers by message role |
+
+The `components` prop accepts either a single `Message` component for all roles, or separate `UserMessage`, `AssistantMessage`, and optionally `SystemMessage` components.
 
 ### AuiIf
 

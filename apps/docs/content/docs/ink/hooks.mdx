@@ -64,13 +64,14 @@ useAuiEvent("thread.runStart", (payload) => {
 
 ### useLocalRuntime
 
-Create an `AssistantRuntime` with a `ChatModelAdapter`.
+Create an `AssistantRuntime` with a `ChatModelAdapter`. Supports [Assistant Cloud](/docs/cloud) integration for thread persistence.
 
 ```tsx
 import { useLocalRuntime } from "@assistant-ui/react-ink";
 
 const runtime = useLocalRuntime(chatModel, {
   initialMessages: [],
+  cloud: assistantCloud, // optional - for cloud persistence
 });
 ```
 
@@ -105,6 +106,87 @@ const runtime = useRemoteThreadListRuntime({
 | `runtimeHook` | `() => AssistantRuntime` | Hook called to produce the per-thread runtime |
 | `adapter` | `RemoteThreadListAdapter` | Adapter implementing thread list persistence |
 | `allowNesting` | `boolean` | When true, becomes a no-op if nested inside another `RemoteThreadListRuntime` |
+
+## Primitive Hooks
+
+Low-level hooks for building custom components.
+
+### useThreadMessages
+
+```tsx
+import { useThreadMessages } from "@assistant-ui/react-ink";
+
+const messages = useThreadMessages(); // ThreadMessage[]
+```
+
+### useThreadIsRunning
+
+```tsx
+import { useThreadIsRunning } from "@assistant-ui/react-ink";
+
+const isRunning = useThreadIsRunning(); // boolean
+```
+
+### useThreadIsEmpty
+
+```tsx
+import { useThreadIsEmpty } from "@assistant-ui/react-ink";
+
+const isEmpty = useThreadIsEmpty(); // boolean
+```
+
+### useComposerSend
+
+```tsx
+import { useComposerSend } from "@assistant-ui/react-ink";
+
+const { send, canSend } = useComposerSend();
+```
+
+### useComposerCancel
+
+```tsx
+import { useComposerCancel } from "@assistant-ui/react-ink";
+
+const { cancel, canCancel } = useComposerCancel();
+```
+
+### useComposerAddAttachment
+
+Add an attachment to the composer. Returns `{ addAttachment }` — call it with a `CreateAttachment` object.
+
+```tsx
+import { useComposerAddAttachment } from "@assistant-ui/react-ink";
+import { readFile } from "fs/promises";
+
+const { addAttachment } = useComposerAddAttachment();
+
+const attachFile = async (path: string) => {
+  const content = await readFile(path, "utf-8");
+  await addAttachment({
+    name: path.split("/").pop() ?? "file.txt",
+    type: "document",
+    content: [{ type: "text", text: content }],
+  });
+};
+```
+
+### useMessageReload
+
+```tsx
+import { useMessageReload } from "@assistant-ui/react-ink";
+
+const { reload, canReload } = useMessageReload();
+```
+
+### useMessageBranching
+
+```tsx
+import { useMessageBranching } from "@assistant-ui/react-ink";
+
+const { branchNumber, branchCount, goToPrev, goToNext } =
+  useMessageBranching();
+```
 
 ## Model Context Hooks
 

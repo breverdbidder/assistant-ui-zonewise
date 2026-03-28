@@ -1,41 +1,84 @@
 ---
 title: Adapters
-description: Title generation adapters for React Ink.
+description: Runtime adapters for thread persistence in React Ink.
 ---
 
-Adapters customize runtime behavior. They can be passed as options to `useLocalRuntime` or `useRemoteThreadListRuntime`.
+Adapters customize how the runtime persists threads and handles attachments.
 
-## RemoteThreadListAdapter
+## Thread Persistence
 
-Title generation is configured via the `generateTitle` method on `RemoteThreadListAdapter`. See the [Custom Backend](/docs/ink/custom-backend) page for a full example.
+For thread persistence across sessions, use [Assistant Cloud](/docs/cloud) or implement a custom `RemoteThreadListAdapter`.
+
+### Assistant Cloud
+
+The recommended approach for apps requiring persistence. Provides cloud-based thread storage with automatic syncing.
 
 ```tsx
-import type { RemoteThreadListAdapter } from "@assistant-ui/react-ink";
-import { createAssistantStream } from "assistant-stream";
+import { useLocalRuntime } from "@assistant-ui/react-ink";
+import { AssistantCloud } from "assistant-cloud";
 
-const myAdapter: RemoteThreadListAdapter = {
-  // ... other methods ...
+const assistantCloud = new AssistantCloud({
+  baseUrl: process.env.ASSISTANT_CLOUD_URL,
+  authToken: () => getAuthToken(),
+});
 
-  async generateTitle(remoteId, unstable_messages) {
-    return createAssistantStream(async (controller) => {
-      const res = await fetch(`/api/threads/${remoteId}/title`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: unstable_messages }),
-      });
-      const { title } = await res.json();
-      controller.appendText(title);
-    });
+const runtime = useLocalRuntime(chatModel, {
+  cloud: assistantCloud,
+});
+```
+
+See the [Assistant Cloud documentation](/docs/cloud) for setup details.
+
+### In-memory (default)
+
+When no persistence is configured, threads live in memory only — lost when the process exits.
+
+```tsx
+const runtime = useLocalRuntime(chatModel);
+```
+
+### Custom Persistence
+
+For custom backend storage, use `useRemoteThreadListRuntime` with a `RemoteThreadListAdapter`:
+
+```tsx
+import { useRemoteThreadListRuntime } from "@assistant-ui/react-ink";
+
+const runtime = useRemoteThreadListRuntime({
+  runtimeHook: () => useMyLocalRuntime(chatModel),
+  adapter: myCustomAdapter,
+});
+```
+
+## Runtime Adapters
+
+Pass adapters to customize runtime behavior:
+
+```tsx
+const runtime = useLocalRuntime(chatModel, {
+  adapters: {
+    history: myHistoryAdapter,
+    attachments: myAttachmentAdapter,
   },
-};
+});
+```
+
+### ThreadHistoryAdapter
+
+Provides message history persistence for individual threads.
+
+```tsx
+interface ThreadHistoryAdapter {
+  load(): Promise<ExportedMessageRepository>;
+  append(item: ExportedMessageRepositoryItem): Promise<void>;
+}
 ```
 
 ## Which option to choose?
 
-| | ChatModelAdapter + `useLocalRuntime` | RemoteThreadListAdapter + `useRemoteThreadListRuntime` |
-|---|---|---|
-| **Thread storage** | In-memory | Your backend |
-| **Message storage** | In-memory | In-memory (can add history adapter for server-side) |
-| **Cross-session persistence** | No | Yes |
-| **Setup complexity** | Minimal | Moderate |
-| **Best for** | CLI tools, demos, prototypes | Production apps with persistence |
+| | `useLocalRuntime` (in-memory) | `useLocalRuntime` + Cloud | `useRemoteThreadListRuntime` |
+|---|---|---|---|
+| **Thread storage** | Memory only | Assistant Cloud | Your backend |
+| **Cross-session persistence** | No | Yes | Yes |
+| **Setup complexity** | Minimal | Low | Moderate |
+| **Best for** | CLI tools, demos | Apps with user accounts | Custom backends |

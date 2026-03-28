@@ -27,6 +27,16 @@ const runtime = useLocalRuntime(chatModel, { cloud });
 
 This gives you multi-thread support with server-side persistence, cross-device sync, and automatic title generation.
 
+See the [Assistant Cloud documentation](/docs/cloud/overview) for setup details.
+
+### In-memory (default)
+
+When no persistence is configured, threads live in memory only — lost on app restart.
+
+```tsx
+const runtime = useLocalRuntime(chatModel);
+```
+
 ### History adapter
 
 For custom persistence (e.g. saving message history to your own backend), pass a `ThreadHistoryAdapter` via `adapters.history`:
@@ -50,6 +60,57 @@ const myHistoryAdapter: ThreadHistoryAdapter = {
 const runtime = useLocalRuntime(chatModel, {
   adapters: {
     history: myHistoryAdapter,
+  },
+});
+```
+
+### Custom Persistence
+
+For custom backend storage with full thread list management, use `useRemoteThreadListRuntime` with a `RemoteThreadListAdapter`:
+
+```tsx
+import { useRemoteThreadListRuntime } from "@assistant-ui/react-native";
+
+const runtime = useRemoteThreadListRuntime({
+  runtimeHook: () => useLocalRuntime(chatModel),
+  adapter: myCustomAdapter,
+});
+```
+
+## Runtime Adapters
+
+Pass adapters to customize runtime behavior:
+
+```tsx
+const runtime = useLocalRuntime(chatModel, {
+  adapters: {
+    history: myHistoryAdapter,
+    attachments: myAttachmentAdapter,
+  },
+});
+```
+
+### ThreadHistoryAdapter
+
+Provides message history persistence for individual threads.
+
+```tsx
+interface ThreadHistoryAdapter {
+  load(): Promise<ExportedMessageRepository>;
+  append(item: ExportedMessageRepositoryItem): Promise<void>;
+}
+```
+
+### AttachmentAdapter
+
+Handles file attachments. Use `SimpleImageAttachmentAdapter` for basic image support:
+
+```tsx
+import { SimpleImageAttachmentAdapter } from "@assistant-ui/react-native";
+
+const runtime = useLocalRuntime(chatModel, {
+  adapters: {
+    attachments: new SimpleImageAttachmentAdapter(),
   },
 });
 ```
@@ -85,10 +146,10 @@ const myAdapter: RemoteThreadListAdapter = {
 
 ## Which option to choose?
 
-| | ChatModelAdapter + `useLocalRuntime` | RemoteThreadListAdapter + `useRemoteThreadListRuntime` |
-|---|---|---|
-| **Thread storage** | In-memory (or cloud) | Your backend |
-| **Message storage** | In-memory (can add history adapter) | In-memory (can add history adapter for server-side) |
-| **Cross-device sync** | Only with cloud | Yes |
-| **Setup complexity** | Minimal | Moderate |
-| **Best for** | Single-device apps, prototypes | Production apps with user accounts |
+| | `useLocalRuntime` (in-memory) | `useLocalRuntime` + Cloud | `useRemoteThreadListRuntime` |
+|---|---|---|---|
+| **Thread storage** | Memory only | Assistant Cloud | Your backend |
+| **Message storage** | Memory only | Cloud | In-memory (can add history adapter) |
+| **Cross-device sync** | No | Yes | Yes |
+| **Setup complexity** | Minimal | Low | Moderate |
+| **Best for** | Prototypes | Production apps | Custom backends |

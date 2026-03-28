@@ -135,22 +135,29 @@ import {
 } from "@assistant-ui/react-ink";
 import { MarkdownText } from "@assistant-ui/react-ink-markdown";
 
-const Message = () => {
-  const message = useAuiState((s) => s.message);
-  const isUser = message.role === "user";
-  const text = message.content
-    .filter((p) => p.type === "text")
-    .map((p) => ("text" in p ? p.text : ""))
-    .join("");
+const UserMessage = () => {
+  const text = useAuiState((s) =>
+    s.message.content
+      .filter((p) => p.type === "text")
+      .map((p) => ("text" in p ? p.text : ""))
+      .join(""),
+  );
 
-  if (isUser) {
-    return (
-      <Box marginBottom={1}>
-        <Text bold color="green">You: </Text>
-        <Text wrap="wrap">{text}</Text>
-      </Box>
-    );
-  }
+  return (
+    <Box marginBottom={1}>
+      <Text bold color="green">You: </Text>
+      <Text wrap="wrap">{text}</Text>
+    </Box>
+  );
+};
+
+const AssistantMessage = () => {
+  const text = useAuiState((s) =>
+    s.message.content
+      .filter((p) => p.type === "text")
+      .map((p) => ("text" in p ? p.text : ""))
+      .join(""),
+  );
 
   return (
     <Box flexDirection="column" marginBottom={1}>
@@ -179,9 +186,12 @@ export const Thread = () => {
         </Box>
       </ThreadPrimitive.Empty>
 
-      <ThreadPrimitive.Messages>
-        {() => <Message />}
-      </ThreadPrimitive.Messages>
+      <ThreadPrimitive.Messages
+        components={{
+          UserMessage,
+          AssistantMessage,
+        }}
+      />
 
       <StatusIndicator />
 
