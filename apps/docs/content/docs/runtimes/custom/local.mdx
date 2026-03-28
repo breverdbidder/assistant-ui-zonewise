@@ -15,7 +15,7 @@ description: Quickest path to a working chat. Handles state while you handle the
 - **Multi-thread support** through [Assistant Cloud](/docs/cloud) or your own database using `useRemoteThreadListRuntime`
 - **Simple adapter pattern** to connect any backend API
 
-While LocalRuntime manages state in-memory by default, it offers multiple persistence options through adapters - use the history adapter for single-thread persistence, Assistant Cloud for managed multi-thread support, or implement your own storage with `useRemoteThreadListRuntime`.
+While LocalRuntime manages state in-memory by default, it offers multiple persistence options - use the `storage` option for browser localStorage persistence, Assistant Cloud for managed multi-thread support, or implement your own storage with `useRemoteThreadListRuntime`.
 
 ## When to Use
 
@@ -26,7 +26,7 @@ Use `LocalRuntime` if you need:
 - **Automatic features** - Branch switching, message editing, and regeneration work out of the box
 - **API flexibility** - Connect to any REST endpoint, OpenAI, or custom model with a simple adapter
 - **Multi-thread support** - Full thread management with Assistant Cloud or custom database
-- **Thread persistence** - Via history adapter, Assistant Cloud, or custom thread list adapter
+- **Thread persistence** - Via localStorage, Assistant Cloud, or custom thread list adapter
 
 ## Key Features
 
@@ -413,7 +413,42 @@ With Assistant Cloud, you get:
 - Automatic synchronization across devices
 - Built-in user authentication
 
-### 2. Custom Database with useRemoteThreadListRuntime
+### 2. Browser localStorage Persistence
+
+For client-side persistence without a backend, pass `localStorage` to the storage option:
+
+```tsx
+import { useLocalRuntime } from "@assistant-ui/react";
+
+const runtime = useLocalRuntime(MyModelAdapter, {
+  storage: localStorage,
+});
+```
+
+This enables:
+
+- Multiple threads persisted in the browser
+- Thread management (create, switch, rename, archive, delete)
+- Automatic title generation
+
+Customize the storage prefix and title generation:
+
+```tsx
+import {
+  useLocalRuntime,
+  createSimpleTitleAdapter,
+} from "@assistant-ui/react";
+
+const runtime = useLocalRuntime(MyModelAdapter, {
+  storage: localStorage,
+  storagePrefix: "my-app-", // Custom key prefix (default: "assistant-ui-")
+  titleGenerator: createSimpleTitleAdapter(), // Or implement your own
+});
+```
+
+The `storage` option accepts any `AsyncStorageLike` object—compatible with `localStorage`, `sessionStorage`, or async backends like React Native's AsyncStorage.
+
+### 3. Custom Database with useRemoteThreadListRuntime
 
 For custom thread storage, use `useRemoteThreadListRuntime` with your own adapter:
 
@@ -1289,6 +1324,25 @@ Configuration options for the `LocalRuntime`.
       type: "AssistantCloud",
       description:
         "Enable Assistant Cloud integration for multi-thread support and persistence",
+    },
+    {
+      name: "storage",
+      type: "AsyncStorageLike",
+      description:
+        "Storage backend for thread persistence (e.g., localStorage, sessionStorage, or React Native AsyncStorage)",
+    },
+    {
+      name: "storagePrefix",
+      type: "string",
+      description:
+        "Key prefix for storage entries",
+      default: '"assistant-ui-"',
+    },
+    {
+      name: "titleGenerator",
+      type: "TitleGenerationAdapter",
+      description:
+        "Custom adapter for generating thread titles. Use createSimpleTitleAdapter() for a basic implementation",
     },
     {
       name: "adapters",

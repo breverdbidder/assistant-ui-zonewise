@@ -41,7 +41,7 @@ aui.threadListItem().detach();
 
 // Get current state
 const state = aui.threadListItem().getState();
-const { id, title, status } = state;
+const { id, title, status, metadata } = state;
 ```
 
 <ParametersTable {...ThreadListItemRuntime} />
@@ -56,6 +56,7 @@ import { useAuiState } from "@assistant-ui/react";
 const title = useAuiState((s) => s.threadListItem.title);
 const status = useAuiState((s) => s.threadListItem.status);
 const id = useAuiState((s) => s.threadListItem.id);
+const metadata = useAuiState((s) => s.threadListItem.metadata);
 ```
 
 <ParametersTable {...ThreadListItemState} />

@@ -18,6 +18,9 @@ const aui = useAui();
 await aui.threads().switchToNewThread();
 await aui.threads().switchToThread(threadId);
 
+// Reload thread list from adapter
+await aui.threads().reload();
+
 // Access the main thread runtime
 const mainThread = aui.threads().main;
 
