@@ -105,7 +105,7 @@ const canSend = useAuiState(
 const messageCount = useAuiState((s) => s.thread.messages.length);
 ```
 
-**Important:** Never create new objects in selectors. Return primitive values or stable references to avoid infinite re-renders.
+**Important:** Never create new objects or arrays in selectors. Return primitive values or stable references to avoid infinite re-renders.
 
 ```tsx
 // ❌ Bad - creates new object every time
@@ -114,9 +114,16 @@ const data = useAuiState((s) => ({
   content: s.message.content,
 }));
 
+// ❌ Bad - .map() creates a new array every time
+const indices = useAuiState((s) => s.thread.messages.map((_, i) => i));
+
 // ✅ Good - returns stable values
 const role = useAuiState((s) => s.message.role);
 const content = useAuiState((s) => s.message.content);
+
+// ✅ Good - return the array directly, then derive values with useMemo
+const messages = useAuiState((s) => s.thread.messages);
+const indices = useMemo(() => messages.map((_, i) => i), [messages]);
 ```
 
 ### useAui
@@ -562,9 +569,16 @@ const data = useAuiState((s) => ({
   content: s.message.content, // New object every time!
 }));
 
+// ❌ Array operations like .map() also cause infinite re-renders
+const indices = useAuiState((s) => s.thread.messages.map((_, i) => i)); // New array every time!
+
 // ✅ Return primitive values or use separate selectors
 const role = useAuiState((s) => s.message.role);
 const content = useAuiState((s) => s.message.content);
+
+// ✅ Return the array directly, then derive values with useMemo
+const messages = useAuiState((s) => s.thread.messages);
+const indices = useMemo(() => messages.map((_, i) => i), [messages]);
 ```
 
 **"Scope resolution failed" / Stale scope references**
