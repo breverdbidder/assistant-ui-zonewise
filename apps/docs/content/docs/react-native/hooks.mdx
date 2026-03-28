@@ -162,6 +162,38 @@ useAssistantToolUI({
 });
 ```
 
+### useToolArgsStatus
+
+Track per-property streaming completion status for tool call arguments. Must be used inside a tool-call message part context.
+
+```tsx
+import { useToolArgsStatus } from "@assistant-ui/react-native";
+
+const WeatherToolUI = makeAssistantToolUI({
+  toolName: "get_weather",
+  render: ({ args }) => {
+    const { status, propStatus } = useToolArgsStatus<{
+      city: string;
+      unit: string;
+    }>();
+
+    return (
+      <View>
+        <Text style={propStatus.city === "streaming" ? styles.streaming : undefined}>
+          {args.city ?? "..."}
+        </Text>
+        {status === "complete" && <WeatherDisplay data={args} />}
+      </View>
+    );
+  },
+});
+```
+
+| Return Value | Type | Description |
+|--------------|------|-------------|
+| `status` | `"running" \| "complete" \| "incomplete" \| "requires-action"` | Overall tool call status |
+| `propStatus` | `Partial<Record<keyof TArgs, "streaming" \| "complete">>` | Per-property streaming status (keys absent until they appear in the stream) |
+
 ### useAssistantDataUI
 
 Register a UI renderer for a named data message part.

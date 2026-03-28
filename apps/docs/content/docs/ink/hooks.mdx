@@ -156,6 +156,37 @@ useAssistantToolUI({
 });
 ```
 
+### useToolArgsStatus
+
+Track per-property streaming completion status for tool call arguments. Must be used inside a tool-call message part context.
+
+```tsx
+import { useToolArgsStatus } from "@assistant-ui/react-ink";
+import { Text } from "ink";
+
+const WeatherToolUI = makeAssistantToolUI({
+  toolName: "get_weather",
+  render: ({ args }) => {
+    const { status, propStatus } = useToolArgsStatus<{
+      city: string;
+      unit: string;
+    }>();
+
+    return (
+      <Text>
+        {propStatus.city === "streaming" ? "Loading..." : args.city}
+        {status === "complete" && ` - Weather loaded`}
+      </Text>
+    );
+  },
+});
+```
+
+| Return Value | Type | Description |
+|--------------|------|-------------|
+| `status` | `"running" \| "complete" \| "incomplete" \| "requires-action"` | Overall tool call status |
+| `propStatus` | `Partial<Record<keyof TArgs, "streaming" \| "complete">>` | Per-property streaming status (keys absent until they appear in the stream) |
+
 ### useAssistantInstructions
 
 Register system instructions in the model context.
