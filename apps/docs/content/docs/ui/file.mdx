@@ -43,6 +43,29 @@ const AssistantMessage: FC = () => {
   </Step>
 </Steps>
 
+## AI-Generated Files
+
+Some models (like Google Gemini) generate images and files inline in responses. With `@assistant-ui/react-ai-sdk`, these are automatically converted to `FileMessagePart` objects.
+
+```tsx title="/components/assistant-ui/thread.tsx"
+import { File } from "@/components/assistant-ui/file";
+
+const AssistantMessage: FC = () => {
+  return (
+    <MessagePrimitive.Root className="...">
+      <MessagePrimitive.Parts
+        components={{
+          Text: MarkdownText,
+          File,
+        }}
+      />
+    </MessagePrimitive.Root>
+  );
+};
+```
+
+For images, use the [Image](/docs/ui/image) component instead.
+
 ## Variants
 
 Use the `variant` prop to change the visual style.
