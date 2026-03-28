@@ -396,6 +396,22 @@ const runtime = useLangGraphRuntime({
 
 See the [Cloud Persistence guide](/docs/cloud/langgraph) for detailed setup instructions.
 
+### Loading State
+
+Display a loading indicator while switching threads. The `thread.isLoading` state is `true` while the `load` handler executes:
+
+```tsx
+import { useThread } from "@assistant-ui/react";
+
+function ThreadLoadingIndicator() {
+  const isLoading = useThread((t) => t.isLoading);
+
+  if (!isLoading) return null;
+
+  return <div className="loading-spinner">Loading thread...</div>;
+}
+```
+
 ## Message Editing & Regeneration
 
 LangGraph uses server-side checkpoints for state management. To support message editing (branching) and regeneration, you need to provide a `getCheckpointId` callback that resolves the appropriate checkpoint for server-side forking.
