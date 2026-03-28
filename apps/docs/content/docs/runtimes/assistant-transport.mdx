@@ -551,6 +551,33 @@ const runtime = useAssistantTransportRuntime({
 });
 ```
 
+#### SendCommandsRequestBody Type
+
+The `body` parameter in `prepareSendCommandsRequest` contains all the fields normally sent to your backend. You can inspect, modify, or extend these fields before the request is sent.
+
+```typescript
+type SendCommandsRequestBody = {
+  commands: QueuedCommand[];
+  state: unknown;
+  system: string | undefined;
+  tools: Record<string, unknown> | undefined;
+  threadId: string | null;
+  parentId?: string | null;
+  [key: string]: unknown;
+};
+```
+
+| Field | Description |
+|-------|-------------|
+| `commands` | Array of queued commands to be processed (`add-message`, `add-tool-result`, or custom commands) |
+| `state` | The current agent state from the frontend |
+| `system` | System prompt from model context, if configured |
+| `tools` | Tool definitions from model context, if configured |
+| `threadId` | Current thread/conversation identifier |
+| `parentId` | Parent message ID for editing (only present when editing messages) |
+
+> **Note:** The type includes `[key: string]: unknown` which means additional fields from `body`, `callSettings`, and `config` may also be present.
+
 ## Editing Messages
 
 By default, editing messages is disabled. To enable it, set `capabilities.edit` to `true`:
