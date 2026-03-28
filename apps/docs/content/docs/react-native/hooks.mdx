@@ -181,12 +181,24 @@ useAssistantDataUI({
 
 ### useAssistantInstructions
 
-Register system instructions in the model context.
+Register static system instructions in the model context.
 
 ```tsx
 import { useAssistantInstructions } from "@assistant-ui/react-native";
 
 useAssistantInstructions("You are a helpful weather assistant.");
+```
+
+### useAssistantContext
+
+Register dynamic context that is evaluated lazily at send-time. Use this for frequently-changing application state.
+
+```tsx
+import { useAssistantContext } from "@assistant-ui/react-native";
+
+useAssistantContext({
+  getContext: () => `Current screen: ${getCurrentScreen()}`,
+});
 ```
 
 ### useInlineRender

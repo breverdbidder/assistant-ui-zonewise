@@ -128,8 +128,9 @@ Multiple providers can be registered, and their contexts will be composed:
 1. **System Instructions**
 
    - Keep them focused and specific to the component's purpose
-   - Use useAssistantInstructions for explicit instructions
-   - Let makeAssistantVisible handle component structure
+   - Use `useAssistantInstructions` for static instructions
+   - Use `useAssistantContext` for dynamic, frequently-changing context
+   - Let `makeAssistantVisible` handle component structure
 
 2. **Tools**
 

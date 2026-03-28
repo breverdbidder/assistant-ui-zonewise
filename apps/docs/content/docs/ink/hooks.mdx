@@ -158,12 +158,24 @@ useAssistantToolUI({
 
 ### useAssistantInstructions
 
-Register system instructions in the model context.
+Register static system instructions in the model context.
 
 ```tsx
 import { useAssistantInstructions } from "@assistant-ui/react-ink";
 
 useAssistantInstructions("You are a helpful terminal assistant.");
+```
+
+### useAssistantContext
+
+Register dynamic context that is evaluated lazily at send-time. Use this for frequently-changing application state.
+
+```tsx
+import { useAssistantContext } from "@assistant-ui/react-ink";
+
+useAssistantContext({
+  getContext: () => `Current directory: ${process.cwd()}`,
+});
 ```
 
 ### useAssistantDataUI

@@ -1,0 +1,76 @@
+---
+title: useAssistantContext
+description: React hook for injecting dynamic context into the system prompt.
+---
+
+`useAssistantContext` is a React hook that allows you to inject dynamic context into the system prompt. Unlike `useAssistantInstructions` which takes a static string, this hook takes a callback that is evaluated fresh each time the model context is read.
+
+## Usage
+
+```tsx
+import { useAssistantContext } from "@assistant-ui/react";
+
+function MyComponent() {
+  // Basic usage with callback
+  useAssistantContext({
+    getContext: () => `Current page: ${window.location.href}`,
+  });
+
+  // With disabled option
+  useAssistantContext({
+    getContext: () => `User session: ${getSessionInfo()}`,
+    disabled: false, // Optional: disable the context
+  });
+
+  return <div>My Component</div>;
+}
+```
+
+## API Reference
+
+### Parameters
+
+The hook accepts a configuration object with:
+
+- `getContext`: A callback function that returns a string. This callback is evaluated lazily at send-time, not at registration time.
+- `disabled`: Optional boolean to disable the context injection.
+
+### Behavior
+
+The hook will:
+
+1. Register a context provider in the model context
+2. Evaluate the `getContext` callback fresh each time the model context is read
+3. Automatically clean up when the component unmounts
+4. Use a ref pattern internally to avoid re-registration when the callback changes
+5. Do nothing if `disabled` is set to `true`
+
+## When to Use
+
+Use `useAssistantContext` when you need to inject frequently-changing application state without triggering re-registrations:
+
+- Current page URL or route
+- User preferences or session state
+- Selected items or active filters
+- Real-time data that changes often
+
+For static instructions that don't change often, use [`useAssistantInstructions`](/docs/copilots/use-assistant-instructions) instead.
+
+## Example
+
+```tsx
+function ProductPage({ productId }: { productId: string }) {
+  useAssistantContext({
+    getContext: () => {
+      const product = getProductFromCache(productId);
+      return `
+        The user is viewing: ${product.name}
+        Price: $${product.price}
+        In stock: ${product.inStock ? "Yes" : "No"}
+      `;
+    },
+  });
+
+  return <div>{/* Product details */}</div>;
+}
+```
