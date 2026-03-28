@@ -500,7 +500,7 @@ const isRunning = useAuiState((s) => s.thread.isRunning);
 | Attachment     | `id`, `type`, `name`, `contentType`, `status`                                                   | File attachments metadata and content              |
 | Suggestions    | `suggestions`                                                                                    | Collection of follow-up message suggestions        |
 | Suggestion     | `title`, `label`, `prompt`                                                                       | Individual suggestion with title, label, and prompt |
-| ModelContext   | *(empty — use `register()` / `getToolCallParams()` methods)*                                     | Model context and tool registration                |
+| ModelContext   | `modelName`, `toolNames`                                                                         | Model context and tool registration                |
 
 ### Available Actions by Scope
 
