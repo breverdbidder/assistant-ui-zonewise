@@ -11,7 +11,7 @@ import {
 } from "@/generated/typeDocs";
 
 Each message can have any number of message parts.
-Message parts are usually one of text, reasoning, audio, tool-call, or data.
+Message parts are usually one of text, reasoning, audio, file, tool-call, or data.
 
 ## Message part Types
 
@@ -26,6 +26,10 @@ Exposes the assistant's reasoning process, showing how it arrived at its respons
 ### Audio
 
 Audio content that can be played back.
+
+### File
+
+File content from assistant responses, such as generated images, PDFs, or other documents. See the [File component](/docs/ui/file) for rendering file parts.
 
 ### Tool Call
 
@@ -222,6 +226,7 @@ import { MessagePrimitive } from "@assistant-ui/react";
     if (part.type === "text") return <MyText />;
     if (part.type === "reasoning") return <MyReasoning {...part} />;
     if (part.type === "audio") return <MyAudio {...part} />;
+    if (part.type === "file") return <File {...part} />;
     if (part.type === "tool-call" && part.toolName === "get_weather") return <MyWeatherToolUI {...part} />;
     if (part.type === "tool-call") return <MyFallbackToolUI {...part} />;
     if (part.type === "data" && part.name === "my_chart") return <MyChartComponent {...part} />;
