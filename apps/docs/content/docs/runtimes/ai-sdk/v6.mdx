@@ -154,6 +154,39 @@ export function TokenCounter() {
   </Step>
 </Steps>
 
+## Automatic Tool Execution
+
+By default, tool call results must be manually sent back. For agentic flows where tools should execute and continue automatically, use `sendAutomaticallyWhen` with `lastAssistantMessageIsCompleteWithToolCalls`:
+
+```tsx
+"use client";
+
+import { Thread } from "@/components/assistant-ui/thread";
+import { AssistantRuntimeProvider } from "@assistant-ui/react";
+import {
+  useChatRuntime,
+  AssistantChatTransport,
+} from "@assistant-ui/react-ai-sdk";
+import { lastAssistantMessageIsCompleteWithToolCalls } from "ai";
+
+export default function Home() {
+  const runtime = useChatRuntime({
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    transport: new AssistantChatTransport({
+      api: "/api/chat",
+    }),
+  });
+
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <div className="h-full">
+        <Thread />
+      </div>
+    </AssistantRuntimeProvider>
+  );
+}
+```
+
 ## Key Changes from v5
 
 | Feature | v5 | v6 |

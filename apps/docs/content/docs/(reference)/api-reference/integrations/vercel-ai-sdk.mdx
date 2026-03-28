@@ -95,6 +95,12 @@ const runtime = useChatRuntime({
               type: "(error: Error) => void",
               description: "Callback for handling errors.",
             },
+            {
+              name: "sendAutomaticallyWhen",
+              type: "(messages: UIMessage[]) => boolean",
+              description:
+                "Optional callback to automatically send messages. Use with `lastAssistantMessageIsCompleteWithToolCalls` from 'ai' for automatic tool execution.",
+            },
           ],
         },
       ],
