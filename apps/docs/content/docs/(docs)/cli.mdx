@@ -340,6 +340,66 @@ Options:
   -h, --help        display help for command
 ```
 
+## agent
+
+Use the `agent` command to launch Claude Code with assistant-ui skills.
+
+```bash
+npx assistant-ui@latest agent <prompt>
+```
+
+This command:
+- Launches Claude Code with assistant-ui knowledge bundled
+- Requires Claude Code to be installed first
+
+**Prerequisites**
+
+Install Claude Code before using this command:
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+**Examples**
+
+```bash
+# Add a chat thread to your project
+npx assistant-ui agent "add a chat thread to my project"
+
+# Set up AI SDK runtime
+npx assistant-ui agent "configure the AI SDK runtime with streaming"
+
+# Add tool calling support
+npx assistant-ui agent "add a weather tool with frontend UI"
+
+# Preview what command would be run
+npx assistant-ui agent "add a chat thread" --dry
+```
+
+**Bundled Skills**
+
+The assistant-ui skill teaches Claude Code how to:
+- Detect existing assistant-ui setup (`components.json` and `@assistant-ui/react`)
+- Initialize new projects with `npx assistant-ui init --yes`
+- Add components via the shadcn registry
+- Set up AI SDK runtime with streaming
+- Configure tool calling with backend and frontend components
+
+**Options**
+
+```bash
+Usage: assistant-ui agent [options] <prompt...>
+
+launch Claude Code with assistant-ui skills
+
+Arguments:
+  prompt       prompt for the agent
+
+Options:
+  --dry        print the command instead of running it
+  -h, --help   display help for command
+```
+
 ## info
 
 Use the `info` command to print your environment and package versions for bug reports.
