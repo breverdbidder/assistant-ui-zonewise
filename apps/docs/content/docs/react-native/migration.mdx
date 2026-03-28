@@ -106,6 +106,14 @@ function MyMessage() {
   );
 }
 
+function MessageBubble({ message }) {
+  return (
+    <View style={{ padding: 12 }}>
+      <Text>{message.content.filter((p) => p.type === "text").map((p) => p.text).join("\n")}</Text>
+    </View>
+  );
+}
+
 function ChatScreen() {
   return (
     <ThreadPrimitive.Root style={{ flex: 1 }}>
