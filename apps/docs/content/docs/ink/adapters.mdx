@@ -1,6 +1,6 @@
 ---
 title: Adapters
-description: Title generation adapters for React Ink.
+description: Storage and title generation adapters for React Ink.
 ---
 
 Adapters customize runtime behavior. They can be passed as options to `useLocalRuntime` or `useRemoteThreadListRuntime`.
@@ -30,12 +30,72 @@ const myAdapter: RemoteThreadListAdapter = {
 };
 ```
 
+## FileStorageAdapter
+
+For terminal apps that need local thread persistence without a backend, use `createFileStorageAdapter`. Thread metadata is stored as JSON files on disk — threads survive process restarts.
+
+```tsx title="app.tsx"
+import {
+  useLocalRuntime,
+  useRemoteThreadListRuntime,
+  AssistantRuntimeProvider,
+  createFileStorageAdapter,
+} from "@assistant-ui/react-ink";
+import { myChatAdapter } from "./adapters/my-chat-adapter.js";
+
+const fileAdapter = createFileStorageAdapter({
+  dir: "./data/threads",
+  prefix: "@assistant-ui:",
+});
+
+function useAppRuntime() {
+  return useRemoteThreadListRuntime({
+    runtimeHook: () => useLocalRuntime(myChatAdapter),
+    adapter: fileAdapter,
+  });
+}
+
+export function App() {
+  const runtime = useAppRuntime();
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      {/* your chat UI */}
+    </AssistantRuntimeProvider>
+  );
+}
+```
+
+### Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `dir` | `string` | Directory for thread files |
+| `prefix` | `string \| undefined` | Prefix for storage keys |
+
+### Using FileStorage directly
+
+For more control, use the `FileStorage` class directly with `createLocalStorageAdapter`:
+
+```tsx
+import { createLocalStorageAdapter } from "@assistant-ui/core/react";
+import { FileStorage } from "@assistant-ui/react-ink";
+
+const storage = new FileStorage({ dir: "./data/threads" });
+
+const adapter = createLocalStorageAdapter({
+  storage,
+  prefix: "@my-app:",
+});
+```
+
+Useful for customizing storage behavior or integrating with existing infrastructure.
+
 ## Which option to choose?
 
-| | ChatModelAdapter + `useLocalRuntime` | RemoteThreadListAdapter + `useRemoteThreadListRuntime` |
-|---|---|---|
-| **Thread storage** | In-memory | Your backend |
-| **Message storage** | In-memory | In-memory (can add history adapter for server-side) |
-| **Cross-session persistence** | No | Yes |
-| **Setup complexity** | Minimal | Moderate |
-| **Best for** | CLI tools, demos, prototypes | Production apps with persistence |
+| | ChatModelAdapter + `useLocalRuntime` | FileStorageAdapter | RemoteThreadListAdapter |
+|---|---|---|---|
+| **Thread storage** | In-memory | Local filesystem | Your backend |
+| **Message storage** | In-memory | In-memory | In-memory (can add history adapter) |
+| **Cross-session persistence** | No | Yes | Yes |
+| **Setup complexity** | Minimal | Minimal | Moderate |
+| **Best for** | Demos, prototypes | CLI tools, single-user apps | Production apps, team sharing |
