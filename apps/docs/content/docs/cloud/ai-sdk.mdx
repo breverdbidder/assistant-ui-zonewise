@@ -257,9 +257,11 @@ export async function POST(req: Request) {
 
 ### Customizing Reports
 
-Use the `beforeReport` hook to enrich or filter telemetry:
+Use the `beforeReport` hook to enrich or filter telemetry. This requires the `assistant-cloud` package:
 
 ```tsx
+import { AssistantCloud } from "assistant-cloud";
+
 const cloud = new AssistantCloud({
   baseUrl: process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL!,
   anonymous: true,
@@ -356,7 +358,10 @@ export async function POST(req: Request) {
 
 ## Authentication
 
-The example above uses anonymous mode (browser session-based user ID) via the env var. For production apps with user accounts, pass an explicit cloud instance:
+The example above uses anonymous mode (browser session-based user ID) via the env var. For production apps with user accounts, install the `assistant-cloud` package and pass an explicit cloud instance:
+
+<InstallCommand npm={["assistant-cloud"]} />
+
 
 ```tsx
 import { useMemo } from "react";
