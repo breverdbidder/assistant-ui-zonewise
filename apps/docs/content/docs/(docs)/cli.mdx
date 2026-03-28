@@ -340,6 +340,62 @@ Options:
   -h, --help        display help for command
 ```
 
+## skills
+
+Use the `skills` command to copy assistant-ui skills into agent-visible folders. AI coding agents like Claude Code, Codex, and Cursor don't read from `node_modules`, so this makes skills discoverable.
+
+```bash
+npx assistant-ui@latest skills
+```
+
+By default, skills are installed to all supported locations:
+- `./skills` — project-local skills folder
+- `~/.codex/skills` — OpenAI Codex CLI
+- `~/.claude/skills` — Claude Code
+- `~/.cursor/skills` — Cursor
+
+**Shipped Skills**
+
+| Skill | Purpose |
+|-------|---------|
+| `assistant-ui-bug-report` | File bug reports to assistant-ui/assistant-ui via GitHub CLI |
+| `changeset` | Non-interactive changeset creation for agent workflows |
+
+**Examples**
+
+```bash
+# Install to all default locations
+npx assistant-ui skills
+
+# Install only to Codex and Claude folders
+npx assistant-ui skills --codex --claude
+
+# Install only to the local project
+npx assistant-ui skills --project
+
+# Preview what would be installed
+npx assistant-ui skills --dry-run
+```
+
+**Options**
+
+```bash
+Usage: assistant-ui skills [options]
+
+install assistant-ui skills into agent-visible skill folders
+
+Options:
+  --all             install to project and all known agent skill folders
+  --project         install to ./skills in the current working directory
+  --codex           install to ~/.codex/skills
+  --claude          install to ~/.claude/skills
+  --cursor          install to ~/.cursor/skills
+  -c, --cwd <cwd>   working directory used for discovery (default: current directory)
+  --no-overwrite    do not replace existing skills in target folders
+  --dry-run         print what would be installed without writing files
+  -h, --help        display help for command
+```
+
 ## info
 
 Use the `info` command to print your environment and package versions for bug reports.
