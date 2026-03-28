@@ -420,6 +420,16 @@ Renders user message attachments using the provided component configuration.
 |------|------|-------------|
 | `components` | `{ Image?, Document?, File?, Attachment? }` | Component renderers by attachment type |
 
+### Error
+
+Renders children only when the current message has an error.
+
+```tsx
+<MessagePrimitive.Error>
+  <Text color="red">This message failed</Text>
+</MessagePrimitive.Error>
+```
+
 ## Attachment
 
 ```tsx
@@ -667,6 +677,49 @@ Renders the individual parts of a chain of thought using a provided components m
   </ChainOfThoughtPrimitive.Parts>
 </ChainOfThoughtPrimitive.Root>
 ```
+
+## Error
+
+```tsx
+import { ErrorPrimitive } from "@assistant-ui/react-ink";
+```
+
+Primitives for displaying error states when a message fails.
+
+### Root
+
+Container `Box` that renders only when the current message has an error.
+
+```tsx
+<ErrorPrimitive.Root>
+  <Text color="red">[Error occurred]</Text>
+</ErrorPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `...rest` | `BoxProps` | Standard Ink Box props |
+
+### Message
+
+`Text` displaying the error message. Only renders when an error exists. Without children, displays the error string directly.
+
+```tsx
+<ErrorPrimitive.Message color="red" />
+```
+
+With custom content:
+
+```tsx
+<ErrorPrimitive.Message color="red">
+  Something went wrong
+</ErrorPrimitive.Message>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `ReactNode` | Optional custom content; defaults to the error message |
+| `...rest` | `TextProps` | Standard Ink Text props |
 
 ## ToolCall
 
