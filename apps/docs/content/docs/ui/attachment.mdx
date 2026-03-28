@@ -221,6 +221,24 @@ type Attachment = {
 
 The `type` field accepts custom strings (e.g. `"data-workflow"`) beyond the built-in types. When an unknown type is encountered, the generic `Attachment` component is used as a fallback. The `contentType` field is optional — it can be omitted for non-file attachments where a MIME type is not meaningful.
 
+#### CreateAttachment
+
+Use the `CreateAttachment` type to add attachments from external sources:
+
+```typescript
+type CreateAttachment = {
+  id?: string;
+  type?: "image" | "document" | "file" | (string & {});
+  name: string;
+  contentType?: string;
+  content: ThreadUserMessagePart[];
+};
+```
+
+Pass this to `aui.composer().addAttachment()` to add attachments that bypass the `AttachmentAdapter` entirely.
+
+See the [Attachments Guide](/docs/guides/attachments#external-source-attachments) for usage examples.
+
 ## Related Components
 
 - [Thread](/docs/ui/thread) - Main chat interface that displays attachments
