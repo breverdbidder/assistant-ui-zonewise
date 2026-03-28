@@ -64,3 +64,16 @@ const EditComposer = () => {
   );
 };
 ```
+
+## LangGraph
+
+<Callout type="info">
+LangGraph requires additional backend configuration. Provide a `getCheckpointId` callback to `useLangGraphRuntime` so the runtime can fork from the correct checkpoint. See [LangGraph Message Editing](/docs/runtimes/langgraph#message-editing--regeneration) for setup instructions.
+</Callout>
+
+## Related
+
+- [Message Branching](/docs/guides/branching) — Navigate between conversation branches created by edits
+- [Quote Selected Text](/docs/guides/quoting) — Let users quote text in their messages
+- [LangGraph Message Editing](/docs/runtimes/langgraph#message-editing--regeneration) — LangGraph-specific editing setup
+- [ComposerPrimitive](/docs/api-reference/primitives/composer) — Low-level composer components
