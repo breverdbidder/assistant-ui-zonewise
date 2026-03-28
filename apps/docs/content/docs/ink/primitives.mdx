@@ -420,6 +420,16 @@ Renders user message attachments using the provided component configuration.
 |------|------|-------------|
 | `components` | `{ Image?, Document?, File?, Attachment? }` | Component renderers by attachment type |
 
+### Error
+
+Conditional rendering based on whether the message has an error status. Renders children only when the message has an error.
+
+```tsx
+<MessagePrimitive.Error>
+  <Text color="red">An error occurred</Text>
+</MessagePrimitive.Error>
+```
+
 ## Attachment
 
 ```tsx
@@ -697,6 +707,44 @@ A built-in component for rendering tool calls with expandable/collapsible output
 | `renderHeader` | `(props: { toolName, status, expanded }) => ReactNode` | Custom header renderer |
 | `renderArgs` | `(props: { args, argsText }) => ReactNode` | Custom args renderer |
 | `renderResult` | `(props: { result, isError }) => ReactNode` | Custom result renderer |
+
+## Error
+
+```tsx
+import { ErrorPrimitive } from "@assistant-ui/react-ink";
+```
+
+### Root
+
+Container `Box` for error content. Only renders when the message has an error status.
+
+```tsx
+<ErrorPrimitive.Root>
+  <ErrorPrimitive.Message />
+</ErrorPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `...rest` | `BoxProps` | Standard Ink Box props |
+
+### Message
+
+`Text` component displaying the error message. Falls back to the error as a string if no children are provided. Only renders when the message has an error status.
+
+```tsx
+<ErrorPrimitive.Message />
+
+{/* Or with custom content */}
+<ErrorPrimitive.Message color="red">
+  Something went wrong
+</ErrorPrimitive.Message>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `ReactNode` | Optional custom error content |
+| `...rest` | `TextProps` | Standard Ink Text props (e.g., `color`) |
 
 ## Diff
 
