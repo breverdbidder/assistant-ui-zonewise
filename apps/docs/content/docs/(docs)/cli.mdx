@@ -33,6 +33,7 @@ Usage: assistant-ui init [options]
 initialize assistant-ui in a new or existing project
 
 Options:
+  -p, --preset <name-or-url> preset name or URL (forwarded to 'assistant-ui create')
   -c, --cwd <cwd>  the working directory. defaults to the current directory.
   -h, --help       display help for command
 ```
@@ -97,6 +98,9 @@ npx assistant-ui@latest create my-app -t cloud-clerk
 # Create from an example
 npx assistant-ui@latest create my-app --example with-langgraph
 
+# Create with a preset (short name)
+npx assistant-ui@latest create my-app --preset chatgpt
+
 # Create with specific package manager
 npx assistant-ui@latest create my-app --use-pnpm
 
@@ -127,6 +131,18 @@ Options:
   --skip-install                 skip installing packages
   -h, --help                     display help for command
 ```
+
+Presets apply pre-built configurations from the [assistant-ui playground](https://www.assistant-ui.com/playground). You can use short names like `chatgpt` instead of full URLs—the CLI expands them automatically:
+
+```bash
+# These are equivalent
+npx assistant-ui create my-app --preset chatgpt
+npx assistant-ui create my-app --preset "https://www.assistant-ui.com/playground/init?preset=chatgpt"
+```
+
+<Callout>
+You cannot use `--preset` together with `--example`.
+</Callout>
 
 ## add
 
