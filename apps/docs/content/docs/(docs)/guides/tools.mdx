@@ -87,6 +87,10 @@ function MyRuntimeProvider({ children }: { children: React.ReactNode }) {
 - **Flexible**: Works with all runtimes (AI SDK, LangGraph, custom, etc.)
 - **Composable**: Easily split toolkits across files and merge them
 
+<Callout>
+Looking to give the AI control over persistent UI state outside the chat? Check out [Interactables](/docs/guides/interactables) — they auto-generate tools that let the AI read and update component state.
+</Callout>
+
 ### Tool Definition
 
 Each tool in the toolkit is a `ToolDefinition` object with these properties:
