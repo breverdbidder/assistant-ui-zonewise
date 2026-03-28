@@ -1,0 +1,221 @@
+---
+title: Queue Item
+description: Display and manage queued messages waiting to be processed.
+---
+
+The QueueItem primitive renders messages that have been submitted while the assistant is already running. When a runtime supports queuing, users can submit multiple messages that wait in line to be processed. Each queue item can be steered (prioritized immediately) or removed.
+
+## Quick Start
+
+A queue list inside the composer:
+
+```tsx
+import { ComposerPrimitive, QueueItemPrimitive } from "@assistant-ui/react";
+
+<ComposerPrimitive.Root>
+  <ComposerPrimitive.Queue>
+    {({ queueItem }) => (
+      <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+        <QueueItemPrimitive.Text className="flex-1 text-sm" />
+        <QueueItemPrimitive.Steer className="text-xs hover:underline">
+          Run Now
+        </QueueItemPrimitive.Steer>
+        <QueueItemPrimitive.Remove className="text-xs hover:underline">
+          ×
+        </QueueItemPrimitive.Remove>
+      </div>
+    )}
+  </ComposerPrimitive.Queue>
+  <ComposerPrimitive.Input placeholder="Ask anything..." />
+  <ComposerPrimitive.Send>Send</ComposerPrimitive.Send>
+</ComposerPrimitive.Root>
+```
+
+`ComposerPrimitive.Queue` iterates over queued messages and renders your component for each one. Inside the component, `QueueItemPrimitive` parts read from the queue item context automatically.
+
+<Callout type="info">
+Queue support requires a runtime with `capabilities.queue` enabled. See the [ExternalThread queue adapter](#externalthread-usage) for custom runtime integration.
+</Callout>
+
+## Core Concepts
+
+### Context-Based Rendering
+
+QueueItemPrimitive parts read from a queue item context. Use `ComposerPrimitive.Queue` to provide this context. It iterates over the composer's queued messages and renders your component for each one:
+
+```tsx
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => <MyQueueItem />}
+</ComposerPrimitive.Queue>
+```
+
+The render function receives the queue item state, giving you access to `queueItem.id` and `queueItem.prompt` for custom rendering logic.
+
+### Steering
+
+Steering interrupts the current assistant run and immediately processes the selected queue item. Use `QueueItemPrimitive.Steer` to let users prioritize a queued message:
+
+```tsx
+<QueueItemPrimitive.Steer className="rounded-md px-2 py-1 hover:bg-muted">
+  Run Now
+</QueueItemPrimitive.Steer>
+```
+
+Users can also steer via the composer by pressing <Kbd>Cmd/Ctrl + Shift + Enter</Kbd> when submitting a new message.
+
+### Removing Queue Items
+
+`QueueItemPrimitive.Remove` lets users cancel a queued message before it's processed:
+
+```tsx
+<QueueItemPrimitive.Remove className="rounded-full p-1 hover:bg-muted">
+  ×
+</QueueItemPrimitive.Remove>
+```
+
+## Parts
+
+### Text
+
+Renders the prompt text of the queue item. Renders a `<span>` element unless `asChild` is set.
+
+```tsx
+<QueueItemPrimitive.Text />
+```
+
+Pass `children` to override the default text:
+
+```tsx
+<QueueItemPrimitive.Text>Custom label</QueueItemPrimitive.Text>
+```
+
+### Steer
+
+Button that steers the current run to process this queue item immediately. Renders a `<button>` element unless `asChild` is set.
+
+```tsx
+<QueueItemPrimitive.Steer className="text-sm text-blue-600 hover:underline">
+  Run Now
+</QueueItemPrimitive.Steer>
+```
+
+### Remove
+
+Button that removes this item from the queue. Renders a `<button>` element unless `asChild` is set.
+
+```tsx
+<QueueItemPrimitive.Remove className="text-muted-foreground hover:text-foreground">
+  ×
+</QueueItemPrimitive.Remove>
+```
+
+## Patterns
+
+### Queue List with Status
+
+```tsx
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => (
+    <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2">
+      <span className="size-2 animate-pulse rounded-full bg-yellow-500" />
+      <QueueItemPrimitive.Text className="flex-1 truncate text-sm" />
+      <div className="flex gap-1">
+        <QueueItemPrimitive.Steer className="rounded px-2 py-1 text-xs hover:bg-muted">
+          Run Now
+        </QueueItemPrimitive.Steer>
+        <QueueItemPrimitive.Remove className="rounded px-2 py-1 text-xs hover:bg-muted">
+          Remove
+        </QueueItemPrimitive.Remove>
+      </div>
+    </div>
+  )}
+</ComposerPrimitive.Queue>
+```
+
+### Minimal Queue Indicator
+
+```tsx
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => (
+    <div className="flex items-center justify-between border-b px-3 py-1.5 text-xs text-muted-foreground">
+      <span>Queued: {queueItem.prompt.slice(0, 30)}...</span>
+      <QueueItemPrimitive.Remove className="hover:text-foreground">×</QueueItemPrimitive.Remove>
+    </div>
+  )}
+</ComposerPrimitive.Queue>
+```
+
+## ExternalThread Usage
+
+To enable queue support in a custom runtime using `ExternalThread`, provide a `queue` adapter:
+
+```tsx
+import { ExternalThread } from "@assistant-ui/react";
+
+ExternalThread({
+  messages,
+  isRunning,
+  queue: {
+    items: state.queue,
+    enqueue: (message, { steer }) => {
+      // Add message to queue
+      // If steer is true, also interrupt current run
+    },
+    steer: (queueItemId) => {
+      // Interrupt current run and process this item immediately
+    },
+    remove: (queueItemId) => {
+      // Remove item from queue
+    },
+    clear: (reason) => {
+      // Clear all pending queue items
+      // reason: "edit" | "reload" | "cancel-run"
+    },
+  },
+  onCancel: () => {
+    // Handle cancellation
+  },
+});
+```
+
+When `queue` is provided:
+- `ComposerPrimitive.Send` stays enabled during runs
+- Users can submit messages while the assistant is running
+- `capabilities.queue` is automatically set to `true`
+- `thread.append()` routes through `queue.enqueue`
+- Edit, reload, and cancel operations call `queue.clear` with the appropriate reason
+
+## Keyboard Shortcuts
+
+When queue support is enabled:
+
+| Key | Description |
+| --- | --- |
+| <Kbd>Enter</Kbd> | Sends the message (queued if running). |
+| <Kbd>Cmd/Ctrl + Shift + Enter</Kbd> | Sends with steer (interrupts current run). |
+
+## API Reference
+
+### QueueItemState
+
+```ts
+type QueueItemState = {
+  readonly id: string;
+  readonly prompt: string;
+};
+```
+
+### ExternalThreadQueueAdapter
+
+```ts
+type ExternalThreadQueueAdapter = {
+  items: readonly QueueItemState[];
+  enqueue: (message: AppendMessage, opts: { steer: boolean }) => void;
+  steer: (queueItemId: string) => void;
+  remove: (queueItemId: string) => void;
+  clear: (reason: "edit" | "reload" | "cancel-run") => void;
+};
+```
+
+Related:
+- [ComposerPrimitive](/docs/primitives/composer)

@@ -25,6 +25,9 @@ const Composer = () => (
         <ComposerPrimitive.QuoteText />
         <ComposerPrimitive.QuoteDismiss />
       </ComposerPrimitive.Quote>
+      <ComposerPrimitive.Queue>
+        {({ queueItem }) => <QueueItem />}
+      </ComposerPrimitive.Queue>
       <ComposerPrimitive.Attachments />
       <ComposerPrimitive.AddAttachment />
       <ComposerPrimitive.Input />
@@ -139,6 +142,7 @@ Default (`submitMode="enter"`):
 | --- | --- |
 | <Kbd>Enter</Kbd> | Sends the message. |
 | <Kbd>Shift + Enter</Kbd> | Inserts a newline. |
+| <Kbd>Cmd/Ctrl + Shift + Enter</Kbd> | Sends with steer (interrupts current run). Requires `capabilities.queue`. |
 | <Kbd>Escape</Kbd> | Sends a cancel action. |
 
 With `submitMode="ctrlEnter"`:
@@ -147,6 +151,7 @@ With `submitMode="ctrlEnter"`:
 | --- | --- |
 | <Kbd>Ctrl/Cmd + Enter</Kbd> | Sends the message. |
 | <Kbd>Enter</Kbd> | Inserts a newline. |
+| <Kbd>Cmd/Ctrl + Shift + Enter</Kbd> | Sends with steer (interrupts current run). Requires `capabilities.queue`. |
 | <Kbd>Escape</Kbd> | Sends a cancel action. |
 
 ### Send
@@ -398,6 +403,40 @@ This primitive renders a `<button>` element unless `asChild` is set.
 
 <Callout type="info">
 See the [Quoting guide](/docs/guides/quoting) for a complete walkthrough including the floating selection toolbar and backend handling.
+</Callout>
+
+### Queue
+
+Renders all queue items in the composer. Queue items are messages submitted while the assistant is already running. Only renders when the runtime supports queuing (`capabilities.queue`).
+
+```tsx
+import { ComposerPrimitive, QueueItemPrimitive } from "@assistant-ui/react";
+
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => (
+    <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+      <QueueItemPrimitive.Text className="flex-1 text-sm" />
+      <QueueItemPrimitive.Steer>Run Now</QueueItemPrimitive.Steer>
+      <QueueItemPrimitive.Remove>×</QueueItemPrimitive.Remove>
+    </div>
+  )}
+</ComposerPrimitive.Queue>
+```
+
+<ParametersTable
+  type="ComposerPrimitiveQueueProps"
+  parameters={[
+    {
+      name: "children",
+      type: "(value: { queueItem: QueueItemState }) => ReactNode",
+      required: true,
+      description: "Render function called for each queue item. Receives the queue item state with `id` and `prompt`.",
+    },
+  ]}
+/>
+
+<Callout type="info">
+See the [QueueItemPrimitive reference](/docs/api-reference/primitives/queue-item) for queue item parts and the [QueueItem guide](/docs/primitives/queue-item) for patterns.
 </Callout>
 
 ### Conditional Rendering

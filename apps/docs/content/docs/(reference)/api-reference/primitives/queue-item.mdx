@@ -1,0 +1,135 @@
+---
+title: QueueItemPrimitive
+description: Primitives for displaying and managing queued messages.
+---
+
+Primitives for rendering messages that have been submitted while the assistant is already running.
+
+<Callout>
+Queue items only exist when the runtime supports queuing (`capabilities.queue`). Use `ComposerPrimitive.Queue` to iterate over them.
+</Callout>
+
+## Anatomy
+
+```tsx
+import { ComposerPrimitive, QueueItemPrimitive } from "@assistant-ui/react";
+
+const ComposerWithQueue = () => (
+  <ComposerPrimitive.Root>
+    <ComposerPrimitive.Queue>
+      {({ queueItem }) => (
+        <div>
+          <QueueItemPrimitive.Text />
+          <QueueItemPrimitive.Steer>Run Now</QueueItemPrimitive.Steer>
+          <QueueItemPrimitive.Remove>×</QueueItemPrimitive.Remove>
+        </div>
+      )}
+    </ComposerPrimitive.Queue>
+    <ComposerPrimitive.Input />
+    <ComposerPrimitive.Send />
+  </ComposerPrimitive.Root>
+);
+```
+
+## API Reference
+
+### Text
+
+Renders the prompt text of the queue item.
+
+This primitive renders a `<span>` element unless `asChild` is set.
+
+```tsx
+<QueueItemPrimitive.Text />
+```
+
+<ParametersTable
+  type="QueueItemPrimitiveTextProps"
+  parameters={[
+    {
+      name: "asChild",
+    },
+  ]}
+/>
+
+### Steer
+
+A button that steers the current run to process this queue item immediately. Steering interrupts the current run.
+
+This primitive renders a `<button>` element unless `asChild` is set.
+
+```tsx
+<QueueItemPrimitive.Steer>Run Now</QueueItemPrimitive.Steer>
+```
+
+<ParametersTable
+  type="QueueItemPrimitiveSteerProps"
+  parameters={[
+    {
+      name: "asChild",
+    },
+  ]}
+/>
+
+### Remove
+
+A button that removes this item from the queue.
+
+This primitive renders a `<button>` element unless `asChild` is set.
+
+```tsx
+<QueueItemPrimitive.Remove>×</QueueItemPrimitive.Remove>
+```
+
+<ParametersTable
+  type="QueueItemPrimitiveRemoveProps"
+  parameters={[
+    {
+      name: "asChild",
+    },
+  ]}
+/>
+
+## Types
+
+### QueueItemState
+
+```ts
+type QueueItemState = {
+  readonly id: string;
+  readonly prompt: string;
+};
+```
+
+### ExternalThreadQueueAdapter
+
+For custom runtimes using `ExternalThread`, provide a queue adapter:
+
+```ts
+type ExternalThreadQueueAdapter = {
+  /** The current queue items. */
+  items: readonly QueueItemState[];
+  /** Called when a message is submitted via the composer. Receives the steer preference. */
+  enqueue: (message: AppendMessage, opts: { steer: boolean }) => void;
+  /** Called to promote an existing queue item (interrupt and run immediately). */
+  steer: (queueItemId: string) => void;
+  /** Called to remove an item from the queue. */
+  remove: (queueItemId: string) => void;
+  /** Called to clear all pending queue items, with the reason for clearing. */
+  clear: (reason: "edit" | "reload" | "cancel-run") => void;
+};
+```
+
+### ComposerSendOptions
+
+Options for `composer.send()`:
+
+```ts
+type ComposerSendOptions = {
+  /**
+   * Whether to steer (interrupt the current run and process this message immediately).
+   * When false (default), the message is queued and processed in order.
+   */
+  steer?: boolean;
+};
+```

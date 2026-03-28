@@ -290,6 +290,30 @@ Clears the active quote from the composer. Renders a `<button>` element unless `
 </ComposerPrimitive.QuoteDismiss>
 ```
 
+### Queue
+
+Renders all queue items in the composer. Queue items are messages submitted while the assistant is already running. Only renders when the runtime supports queuing (`capabilities.queue`).
+
+```tsx
+import { ComposerPrimitive, QueueItemPrimitive } from "@assistant-ui/react";
+
+<ComposerPrimitive.Queue>
+  {({ queueItem }) => (
+    <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+      <QueueItemPrimitive.Text className="flex-1 text-sm" />
+      <QueueItemPrimitive.Steer>Run Now</QueueItemPrimitive.Steer>
+      <QueueItemPrimitive.Remove>×</QueueItemPrimitive.Remove>
+    </div>
+  )}
+</ComposerPrimitive.Queue>
+```
+
+The render function receives `{ queueItem }` with the queue item's `id` and `prompt`. Use `QueueItemPrimitive` parts inside to render the item's text and action buttons.
+
+<Callout type="info">
+See the [QueueItem primitive](/docs/primitives/queue-item) for full documentation on queue item parts and patterns.
+</Callout>
+
 ### Unstable_MentionRoot
 
 Provider that manages mention state and `@` trigger detection.
@@ -481,6 +505,39 @@ Use `onSubmit` on `Root` to intercept submission:
 
 With `submitMode="ctrlEnter"`, plain Enter inserts a newline and Ctrl/Cmd+Enter submits.
 
+### With Message Queue
+
+When the runtime supports queuing, users can submit messages while the assistant is still running. Show queued messages and provide controls to steer or remove them:
+
+```tsx
+import { ComposerPrimitive, QueueItemPrimitive } from "@assistant-ui/react";
+
+<ComposerPrimitive.Root>
+  <ComposerPrimitive.Queue>
+    {({ queueItem }) => (
+      <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+        <span className="size-2 animate-pulse rounded-full bg-yellow-500" />
+        <QueueItemPrimitive.Text className="flex-1 truncate text-sm" />
+        <QueueItemPrimitive.Steer className="text-xs hover:underline">
+          Run Now
+        </QueueItemPrimitive.Steer>
+        <QueueItemPrimitive.Remove className="text-xs hover:underline">
+          ×
+        </QueueItemPrimitive.Remove>
+      </div>
+    )}
+  </ComposerPrimitive.Queue>
+  <ComposerPrimitive.Input placeholder="Ask anything..." />
+  <ComposerPrimitive.Send>Send</ComposerPrimitive.Send>
+</ComposerPrimitive.Root>
+```
+
+When queue support is enabled, `Send` stays enabled during runs. Users can press <Kbd>Cmd/Ctrl + Shift + Enter</Kbd> to send with steer, which interrupts the current run and processes the new message immediately.
+
+<Callout type="info">
+Queue support requires a runtime with `capabilities.queue` enabled. See the [QueueItem primitive](/docs/primitives/queue-item) for setup and full documentation.
+</Callout>
+
 ### Floating Composer
 
 Primitives aren't bound to any layout. Here's how the floating composer on this docs site is built, using the same `ComposerPrimitive.Root` and `ComposerPrimitive.Input` positioned with CSS:
@@ -524,3 +581,4 @@ For full prop details on every part, see the [ComposerPrimitive API Reference](/
 Related:
 - [ThreadPrimitive](/docs/primitives/thread)
 - [AttachmentPrimitive](/docs/primitives/attachment)
+- [QueueItemPrimitive](/docs/primitives/queue-item)
