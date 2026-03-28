@@ -154,6 +154,30 @@ export function TokenCounter() {
   </Step>
 </Steps>
 
+### ThreadTokenUsage Type
+
+`useThreadTokenUsage` returns a `ThreadTokenUsage` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalTokens` | `number?` | Total tokens used |
+| `inputTokens` | `number?` | Input (prompt) tokens |
+| `outputTokens` | `number?` | Output (completion) tokens |
+| `reasoningTokens` | `number?` | Reasoning tokens (e.g., OpenAI o1, Claude extended thinking) |
+| `cachedInputTokens` | `number?` | Cached input tokens (prompt caching) |
+
+### getThreadMessageTokenUsage
+
+Extracts token usage outside of React components:
+
+```tsx
+import { getThreadMessageTokenUsage } from "@assistant-ui/react-ai-sdk";
+
+const message = { role: "assistant", metadata: { /* ... */ } };
+const usage = getThreadMessageTokenUsage(message);
+// Returns: ThreadTokenUsage | undefined
+```
+
 ## Key Changes from v5
 
 | Feature | v5 | v6 |
