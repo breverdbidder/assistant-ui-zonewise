@@ -70,16 +70,19 @@ When the hook mounts it calls `list()` on your adapter, hydrates existing thread
     import { myModelAdapter } from "./model-adapter"; // your chat model adapter
 
     const threadListAdapter: RemoteThreadListAdapter = {
-      async list() {
-        const response = await fetch("/api/threads");
-        const threads = await response.json();
+      async list(params) {
+        const url = new URL("/api/threads", window.location.origin);
+        if (params?.cursor) url.searchParams.set("cursor", params.cursor);
+        const response = await fetch(url);
+        const data = await response.json();
         return {
-          threads: threads.map((thread: any) => ({
+          threads: data.threads.map((thread: any) => ({
             remoteId: thread.id,
             externalId: thread.external_id ?? undefined,
             status: thread.is_archived ? "archived" : "regular",
             title: thread.title ?? undefined,
           })),
+          cursor: data.nextCursor, // enables load-more if present
         };
       },
       async initialize(localId) {
@@ -155,9 +158,9 @@ When the hook mounts it calls `list()` on your adapter, hydrates existing thread
   parameters={[
     {
       name: "list",
-      type: "() => Promise<{ threads: RemoteThreadMetadata[] }>",
+      type: "(params?: { cursor?: string }) => Promise<{ threads: RemoteThreadMetadata[]; cursor?: string }>",
       description:
-        "Return the current threads. Each thread must include status, remoteId, and any metadata you want to show immediately.",
+        "Return threads, optionally paginated. Each thread must include status, remoteId, and any metadata you want to show immediately. Return a cursor to enable load-more functionality.",
       required: true,
     },
     {
@@ -221,6 +224,30 @@ When the hook mounts it calls `list()` on your adapter, hydrates existing thread
 - `archive`, `unarchive`, and `delete` are called optimistically; throw to revert the UI.
 - `generateTitle()` powers the automatic title button and expects an `AssistantStream`.
 - Provide a `runtimeHook` that always returns a fresh runtime instance per active thread.
+
+## Pagination
+
+Custom Thread List supports cursor-based pagination for loading threads incrementally.
+
+To enable pagination:
+
+1. Return a `cursor` from your `list()` adapter when more threads are available
+2. Accept the `cursor` parameter in `list()` to fetch the next page
+
+The runtime exposes pagination state and actions:
+
+```tsx
+import { useAuiState, useAui } from "@assistant-ui/react";
+
+// Check if more threads can be loaded
+const canLoadMore = useAuiState((s) => s.threads.canLoadMore);
+
+// Load the next page
+const aui = useAui();
+const handleLoadMore = () => aui.threads().loadMore();
+```
+
+When `canLoadMore` is `true`, calling `loadMore()` invokes your adapter's `list({ cursor })` method with the cursor from the previous response. The returned threads are appended to the existing list.
 
 ## Avoiding Race Conditions in History Adapters
 

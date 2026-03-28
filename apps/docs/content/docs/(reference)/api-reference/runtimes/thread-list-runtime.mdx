@@ -18,6 +18,9 @@ const aui = useAui();
 await aui.threads().switchToNewThread();
 await aui.threads().switchToThread(threadId);
 
+// Pagination - load next page of threads
+await aui.threads().loadMore();
+
 // Access the main thread runtime
 const mainThread = aui.threads().main;
 
@@ -47,6 +50,7 @@ import { useAuiState } from "@assistant-ui/react";
 
 const threads = useAuiState((s) => s.threads.threadIds);
 const isLoading = useAuiState((s) => s.threads.isLoading);
+const canLoadMore = useAuiState((s) => s.threads.canLoadMore);
 ```
 
 <ParametersTable {...ThreadListState} />
