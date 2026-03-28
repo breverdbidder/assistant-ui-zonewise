@@ -337,6 +337,28 @@ const runtime = useLangGraphRuntime({
 });
 ```
 
+### Multi-Node Workflows
+
+LangGraph workflows often include nodes that don't invoke an LLM—validation, post-processing, or cached responses. The runtime supports messages from all node types:
+
+- **LLM nodes** — streaming responses via `messages-tuple` events
+- **Non-LLM nodes** — messages via `updates` or `values` events
+
+#### Stream Mode Configuration
+
+The `streamMode` parameter controls which event types the LangGraph server sends. For multi-node workflows, include both `messages-tuple` (or `messages`) and `values` to capture all messages:
+
+```typescript
+streamMode: ["messages-tuple", "values"]
+```
+
+The runtime automatically:
+- Extracts messages from `updates` events (flat and node-keyed formats)
+- Syncs messages from `values` events when tuple events are unavailable
+- Reconciles the final state using the last `values` snapshot
+
+This ensures messages from all nodes appear in the UI, whether from an LLM call or a computation node.
+
 ### Message Metadata
 
 When using `streamMode: "messages-tuple"`, each chunk includes metadata from the LangGraph server. Access accumulated metadata per message with the `useLangGraphMessageMetadata` hook:
