@@ -10,6 +10,7 @@
     "---API Reference---",
     "primitives",
     "hooks",
-    "adapters"
+    "adapters",
+    "tool-approval"
   ]
 }

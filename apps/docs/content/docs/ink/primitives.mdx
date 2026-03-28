@@ -687,6 +687,8 @@ A built-in component for rendering tool calls with expandable/collapsible output
 </MessagePrimitive.Parts>
 ```
 
+When `status` is `requires-action` and both `addResult` and `resume` props are provided, ToolFallback automatically renders a [ToolApproval](/docs/ink/tool-approval) UI for human-in-the-loop workflows.
+
 | Prop | Type | Description |
 |------|------|-------------|
 | `part` | `ToolCallMessagePartProps` | The tool call message part (pass the component prop directly) |
@@ -697,6 +699,7 @@ A built-in component for rendering tool calls with expandable/collapsible output
 | `renderHeader` | `(props: { toolName, status, expanded }) => ReactNode` | Custom header renderer |
 | `renderArgs` | `(props: { args, argsText }) => ReactNode` | Custom args renderer |
 | `renderResult` | `(props: { result, isError }) => ReactNode` | Custom result renderer |
+| `approvalProps` | `Partial<ToolApprovalProps>` | Props forwarded to ToolApproval |
 
 ## Diff
 

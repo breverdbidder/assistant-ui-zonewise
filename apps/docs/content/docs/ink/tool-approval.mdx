@@ -1,0 +1,143 @@
+---
+title: ToolApproval
+description: Interactive UI for approving, denying, or modifying tool calls before execution.
+---
+
+Interactive component for approving, denying, or modifying tool calls before execution. Supports keyboard shortcuts for quick decisions and works with ToolFallback for human-in-the-loop workflows in terminal apps.
+
+## Usage
+
+```tsx
+import { ToolApproval } from "@assistant-ui/react-ink";
+
+<ToolApproval
+  toolName="read_file"
+  argsText='{"path": "/src/index.ts"}'
+  addResult={addResult}
+  resume={resume}
+/>
+```
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Y` | Approve the tool call |
+| `N` or `Esc` | Deny the tool call |
+| `E` | Edit the tool arguments before approval |
+| `A` | Always allow this tool (sets trust level to "tool") |
+| `S` | Allow this tool for the session (sets trust level to "session") |
+
+All keys are case-insensitive.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `toolName` | `string` | required | Name of the tool being approved |
+| `argsText` | `string` | required | JSON string of tool arguments |
+| `addResult` | `(result: unknown) => void` | required | Callback to submit a tool result |
+| `resume` | `(payload: unknown) => void` | required | Callback to resume an interrupted tool call |
+| `interrupt` | `{ type: "human"; payload: unknown }` | — | Interrupt payload from the runtime |
+| `onTrustChange` | `(toolName: string, level: TrustLevel) => void` | — | Called when user sets a trust level |
+| `autoRejectTimeout` | `number` | `0` | Auto-deny timeout in seconds (0 = disabled) |
+| `allowEdit` | `boolean` | `!!interrupt` | Show the edit option (defaults to `true` when `interrupt` is provided) |
+| `showTrustOptions` | `boolean` | `true` | Show trust level options (A/S keys) |
+| `labels` | `object` | — | Custom labels for the UI |
+
+### TrustLevel
+
+```ts
+type TrustLevel = "once" | "tool" | "session";
+```
+
+### Custom Labels
+
+```tsx
+<ToolApproval
+  toolName="delete_file"
+  argsText={argsText}
+  addResult={addResult}
+  resume={resume}
+  labels={{
+    approve: "Yes",
+    reject: "No",
+    edit: "Modify",
+    trustTool: "Always allow",
+    trustSession: "Allow all this session",
+  }}
+/>
+```
+
+## Integration with ToolFallback
+
+ToolApproval integrates with the `ToolFallback` component via the `approvalProps` prop. When a tool call has status `requires-action`, ToolFallback automatically renders the ToolApproval UI.
+
+```tsx
+import { ToolFallback } from "@assistant-ui/react-ink";
+
+<ToolFallback
+  toolName="execute_command"
+  argsText={argsText}
+  status="requires-action"
+  addResult={addResult}
+  resume={resume}
+  approvalProps={{
+    onTrustChange: (toolName, level) => {
+      // Persist trust decision
+      saveTrustLevel(toolName, level);
+    },
+    autoRejectTimeout: 30,
+  }}
+/>
+```
+
+## Auto-Reject Timeout
+
+Set `autoRejectTimeout` to automatically deny tool calls after a specified number of seconds. A countdown is displayed to the user.
+
+```tsx
+<ToolApproval
+  toolName="send_email"
+  argsText={argsText}
+  addResult={addResult}
+  resume={resume}
+  autoRejectTimeout={30} // Auto-deny after 30 seconds
+/>
+```
+
+## Editing Arguments
+
+When the user presses `E`, the component enters edit mode where they can modify the JSON arguments before approval. Press `Enter` to submit the edited args, or `Escape` to cancel.
+
+The edit option is shown by default only when using the interrupt-based flow (when `interrupt` is provided). For the human-tool-names flow, set `allowEdit={true}` explicitly to enable editing.
+
+The edit option is hidden when:
+- `allowEdit` is `false` (the default when no `interrupt` is provided)
+- `argsText` is empty
+
+## Trust Levels
+
+The `onTrustChange` callback is invoked when users select trust options:
+
+- **"once"** (Y key): Approve this single tool call
+- **"tool"** (A key): Always allow this specific tool
+- **"session"** (S key): Allow all tools for the current session
+
+Your application is responsible for persisting and enforcing trust decisions.
+
+```tsx
+const [trustedTools, setTrustedTools] = useState<Set<string>>(new Set());
+
+<ToolApproval
+  toolName="read_file"
+  argsText={argsText}
+  addResult={addResult}
+  resume={resume}
+  onTrustChange={(toolName, level) => {
+    if (level === "tool") {
+      setTrustedTools((prev) => new Set(prev).add(toolName));
+    }
+  }}
+/>
+```
