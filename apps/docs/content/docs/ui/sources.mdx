@@ -1,6 +1,6 @@
 ---
 title: Sources
-description: Display URL sources with favicon, title, and external link.
+description: Display URL and document sources as citations in assistant messages.
 ---
 
 import { SourcesSample } from "@/components/docs/samples/sources";
@@ -43,6 +43,48 @@ const AssistantMessage: FC = () => {
   </Step>
 </Steps>
 
+## Source Types
+
+The `Sources` component renders URL sources (`sourceType: "url"`), which include a link and optional title. Document sources (`sourceType: "document"`) require a custom component.
+
+## Document Sources
+
+Document sources come from AI SDK's `source-document` parts. They include metadata like title, media type, and optional filename, but no URL.
+
+To render document sources, create a custom component and pass it to `MessagePrimitive.Parts`:
+
+```tsx title="/components/assistant-ui/thread.tsx" {1,3-12,14-19}
+import { Sources } from "@/components/assistant-ui/sources";
+
+const DocumentSource = ({ id, title, mediaType, filename }) => {
+  return (
+    <div className="flex items-center gap-2 rounded border p-2">
+      <FileIcon className="size-4" />
+      <span>{title || filename || "Document"}</span>
+    </div>
+  );
+};
+
+const MySource = (props) => {
+  if (props.sourceType === "document") {
+    return <DocumentSource {...props} />;
+  }
+  return <Sources {...props} />;
+};
+
+const AssistantMessage = () => {
+  return (
+    <MessagePrimitive.Root className="...">
+      <MessagePrimitive.Parts
+        components={{
+          Source: MySource,
+        }}
+      />
+    </MessagePrimitive.Root>
+  );
+};
+```
+
 ## Variants
 
 Use the `variant` prop to change the visual style. The default is `outline`.
@@ -72,13 +114,26 @@ Use the `size` prop to change the size.
 
 ### `Sources`
 
-The default export used as a `SourceMessagePartComponent`. Renders a single source part when `sourceType === "url"`. Also exposes compound sub-components for custom layouts.
+The default export used as a `SourceMessagePartComponent`. Renders a single source part when `sourceType === "url"`. Returns `null` for document sources—use a custom component to handle those. Also exposes compound sub-components for custom layouts.
+
+#### URL Source Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `url` | `string` | — | The URL of the source (provided by the runtime) |
+| `sourceType` | `"url"` | — | Identifies this as a URL source |
+| `id` | `string` | — | Unique identifier for the source |
+| `url` | `string` | — | The URL of the source |
 | `title` | `string \| undefined` | — | Display title; falls back to the domain if omitted |
-| `sourceType` | `string` | — | Must be `"url"` to render; other types are ignored |
+
+#### Document Source Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `sourceType` | `"document"` | — | Identifies this as a document source |
+| `id` | `string` | — | Unique identifier for the source |
+| `title` | `string` | — | Display title for the document |
+| `mediaType` | `string` | — | MIME type (e.g., `"application/pdf"`) |
+| `filename` | `string \| undefined` | — | Original filename of the document |
 
 #### Compound sub-components
 
