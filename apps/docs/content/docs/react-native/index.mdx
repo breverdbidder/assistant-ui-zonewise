@@ -20,22 +20,21 @@ cd my-chat-app
   </Step>
   <Step>
 
-### Configure API endpoint
+### Start the development server
 
-Create a `.env` file pointing to your chat API:
-
-```
-EXPO_PUBLIC_CHAT_ENDPOINT_URL="http://localhost:3000/api/chat"
-```
-
-  </Step>
-  <Step>
-
-### Start the app
+The example includes a bundled API endpoint for local development.
 
 ```sh
 npx expo start
 ```
+
+For production, create a `.env` file pointing to your own backend:
+
+```
+EXPO_PUBLIC_CHAT_ENDPOINT_URL="https://your-api.example.com/api/chat"
+```
+
+See [Manual Setup](#manual-setup) for creating your own backend endpoint.
 
   </Step>
 </Steps>
