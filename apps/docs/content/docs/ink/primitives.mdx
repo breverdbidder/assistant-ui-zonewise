@@ -698,6 +698,163 @@ A built-in component for rendering tool calls with expandable/collapsible output
 | `renderArgs` | `(props: { args, argsText }) => ReactNode` | Custom args renderer |
 | `renderResult` | `(props: { result, isError }) => ReactNode` | Custom result renderer |
 
+## Checklist
+
+```tsx
+import { ChecklistPrimitive } from "@assistant-ui/react-ink";
+```
+
+Primitives for rendering progress checklists in the terminal.
+
+### Root
+
+Container `Box` for the checklist area.
+
+```tsx
+<ChecklistPrimitive.Root>
+  {children}
+</ChecklistPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `...rest` | `BoxProps` | Standard Ink Box props |
+
+### Item
+
+Renders a checklist item with status indicator (`□` pending, spinner running, `■` complete, `x` error).
+
+```tsx
+<ChecklistPrimitive.Item
+  item={{ id: "1", text: "Install dependencies", status: "running" }}
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `item` | `ChecklistItemData` | Item to render (`{ id, text, status, detail?, children? }`) |
+| `depth` | `number` | Current nesting depth (default: 0) |
+| `maxDepth` | `number` | Maximum nesting depth to render (default: 2) |
+| `renderItem` | `(props: { item, depth }) => ReactNode` | Custom item renderer |
+
+### Progress
+
+Displays completion progress. Counts items with `complete` or `error` status as done.
+
+```tsx
+<ChecklistPrimitive.Progress items={items} />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `items` | `ChecklistItemData[]` | Array of checklist items |
+
+### Types
+
+```tsx
+type ChecklistItemStatus = "pending" | "running" | "complete" | "error";
+
+interface ChecklistItemData {
+  id: string;
+  text: string;
+  status: ChecklistItemStatus;
+  detail?: string;
+  children?: ChecklistItemData[];
+}
+```
+
+## Pre-composed Checklists
+
+Higher-level components built on `ChecklistPrimitive`.
+
+### LiveChecklist
+
+Accepts a manual `items` array or automatically displays tool activity from the current message context.
+
+```tsx
+import { LiveChecklist } from "@assistant-ui/react-ink";
+
+// With manual items
+<LiveChecklist
+  items={[
+    { id: "1", text: "Analyze codebase", status: "complete" },
+    { id: "2", text: "Generate changes", status: "running" },
+    { id: "3", text: "Apply edits", status: "pending" },
+  ]}
+  title="Progress"
+  showProgress
+/>
+
+// Auto-detect tool calls from message context
+<LiveChecklist title="Tool Activity" showProgress />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `items` | `ChecklistItemData[]` | Manual items. When omitted, shows tool activity from message context |
+| `title` | `string` | Title displayed above the checklist |
+| `showProgress` | `boolean` | Show completion progress at the bottom |
+| `maxDepth` | `number` | Maximum nesting depth for nested items |
+| `renderItem` | `(props: { item, depth }) => ReactNode` | Custom item renderer |
+| `formatToolName` | `(toolName: string) => string` | Format tool names in auto-detect mode |
+
+### ToolActivityChecklist
+
+Renders tool calls from the current message as a checklist. Useful inside `MessagePrimitive.Parts` for showing tool execution progress.
+
+```tsx
+import { ToolActivityChecklist } from "@assistant-ui/react-ink";
+
+<MessagePrimitive.Parts>
+  {({ part }) => {
+    if (part.type === "tool-call") return null; // Handled by ToolActivityChecklist
+    if (part.type === "text") return <Text>{part.text}</Text>;
+    return null;
+  }}
+</MessagePrimitive.Parts>
+<ToolActivityChecklist title="Tools" showProgress />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title` | `string` | Title above the checklist |
+| `showProgress` | `boolean` | Show completion progress |
+| `renderItem` | `(props: { item, depth }) => ReactNode` | Custom item renderer |
+| `formatToolName` | `(toolName: string) => string` | Format tool names for display |
+
+### DataChecklist / ChecklistDataUI
+
+Data-driven checklist using the data UI system. Register `ChecklistDataUI` to automatically render checklist data parts.
+
+```tsx
+import { DataChecklist, ChecklistDataUI } from "@assistant-ui/react-ink";
+
+// Register with data UI system
+<AssistantRuntimeProvider runtime={runtime} dataUIs={[ChecklistDataUI]}>
+  {children}
+</AssistantRuntimeProvider>
+
+// Or use DataChecklist directly
+<DataChecklist
+  data={{
+    items: [
+      { id: "1", text: "Task one", status: "complete" },
+      { id: "2", text: "Task two", status: "running" },
+    ],
+    title: "My Checklist",
+  }}
+/>
+```
+
+`ChecklistDataUI` responds to data parts with `name: "checklist"` and expects a `ChecklistData` payload:
+
+```tsx
+interface ChecklistData {
+  items: ChecklistItemData[];
+  title?: string;
+}
+```
+
 ## Diff
 
 ```tsx
