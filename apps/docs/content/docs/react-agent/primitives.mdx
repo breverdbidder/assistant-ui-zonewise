@@ -1,0 +1,425 @@
+---
+title: Primitives
+description: Composable components for building agent supervision UIs.
+---
+
+Primitives are unstyled building blocks for creating custom agent supervision UIs. They use namespace imports (e.g., `TaskPrimitive.Root`, `ApprovalPrimitive.Approve`) and are designed to be composed together.
+
+## Task
+
+```tsx
+import { TaskPrimitive } from "@assistant-ui/react-agent";
+```
+
+### Root
+
+Container that provides task context to child components.
+
+```tsx
+<TaskPrimitive.Root taskId="task-123">
+  {children}
+</TaskPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `taskId` | `string` | The task ID to provide context for |
+
+### Title
+
+Renders the task title.
+
+```tsx
+<TaskPrimitive.Title />
+```
+
+### Status
+
+Renders the task status (draft, running, completed, failed).
+
+```tsx
+<TaskPrimitive.Status showIcon />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `showIcon` | `boolean` | Whether to show a status icon |
+
+### Cost
+
+Renders the task cost.
+
+```tsx
+<TaskPrimitive.Cost precision={2} />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `precision` | `number` | Decimal precision for cost display |
+
+### Cancel
+
+Button that cancels the running task.
+
+```tsx
+<TaskPrimitive.Cancel>
+  Cancel Task
+</TaskPrimitive.Cancel>
+```
+
+## Agent
+
+```tsx
+import { AgentPrimitive } from "@assistant-ui/react-agent";
+```
+
+### Root
+
+Container that provides agent context to child components.
+
+```tsx
+<AgentPrimitive.Root agentId="agent-123">
+  {children}
+</AgentPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `agentId` | `string` | The agent ID to provide context for |
+
+### Name
+
+Renders the agent name.
+
+```tsx
+<AgentPrimitive.Name />
+```
+
+### Status
+
+Renders the agent status.
+
+```tsx
+<AgentPrimitive.Status showIcon />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `showIcon` | `boolean` | Whether to show a status icon |
+
+### Cost
+
+Renders the agent's accumulated cost.
+
+```tsx
+<AgentPrimitive.Cost precision={2} />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `precision` | `number` | Decimal precision for cost display |
+
+## Approval
+
+```tsx
+import { ApprovalPrimitive } from "@assistant-ui/react-agent";
+```
+
+### Root
+
+Container that provides approval context to child components.
+
+```tsx
+<ApprovalPrimitive.Root approvalId="approval-123">
+  {children}
+</ApprovalPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `approvalId` | `string` | The approval ID to provide context for |
+
+### ToolName
+
+Renders the name of the tool requesting approval.
+
+```tsx
+<ApprovalPrimitive.ToolName />
+```
+
+### ToolInput
+
+Renders the tool input as formatted JSON.
+
+```tsx
+<ApprovalPrimitive.ToolInput />
+```
+
+### Reason
+
+Renders the reason for the approval request.
+
+```tsx
+<ApprovalPrimitive.Reason />
+```
+
+### Status
+
+Renders the approval status (pending, approved, denied).
+
+```tsx
+<ApprovalPrimitive.Status showIcon />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `showIcon` | `boolean` | Whether to show a status icon |
+
+### Approve
+
+Button that approves the tool execution.
+
+```tsx
+<ApprovalPrimitive.Approve>
+  Approve
+</ApprovalPrimitive.Approve>
+```
+
+### Deny
+
+Button that denies the tool execution.
+
+```tsx
+<ApprovalPrimitive.Deny>
+  Deny
+</ApprovalPrimitive.Deny>
+```
+
+### ApproveSession
+
+Button that approves this tool for the current session.
+
+```tsx
+<ApprovalPrimitive.ApproveSession>
+  Approve for Session
+</ApprovalPrimitive.ApproveSession>
+```
+
+### ApproveAlways
+
+Button that always approves this tool.
+
+```tsx
+<ApprovalPrimitive.ApproveAlways>
+  Always Approve
+</ApprovalPrimitive.ApproveAlways>
+```
+
+### ApproveTimed
+
+Button that approves this tool for a specified duration.
+
+```tsx
+<ApprovalPrimitive.ApproveTimed durationMs={300000}>
+  Approve for 5 minutes
+</ApprovalPrimitive.ApproveTimed>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `durationMs` | `number` | Duration in milliseconds to approve the tool |
+
+## ApprovalQueue
+
+```tsx
+import { ApprovalQueuePrimitive } from "@assistant-ui/react-agent";
+```
+
+### Root
+
+Container that provides approval queue context with optional filtering.
+
+```tsx
+<ApprovalQueuePrimitive.Root filter={{ status: "pending" }}>
+  {children}
+</ApprovalQueuePrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `filter` | `{ status?: string }` | Filter approvals by status |
+
+### Count
+
+Renders the count of approvals in the queue.
+
+```tsx
+<ApprovalQueuePrimitive.Count>
+  {(count) => <span>{count} pending approvals</span>}
+</ApprovalQueuePrimitive.Count>
+```
+
+### ApproveAll
+
+Button that approves all pending approvals in the queue.
+
+```tsx
+<ApprovalQueuePrimitive.ApproveAll>
+  Approve All
+</ApprovalQueuePrimitive.ApproveAll>
+```
+
+### DenyAll
+
+Button that denies all pending approvals in the queue.
+
+```tsx
+<ApprovalQueuePrimitive.DenyAll>
+  Deny All
+</ApprovalQueuePrimitive.DenyAll>
+```
+
+## TaskLauncher
+
+```tsx
+import { TaskLauncherPrimitive } from "@assistant-ui/react-agent";
+```
+
+### Root
+
+Container for task creation UI.
+
+```tsx
+<TaskLauncherPrimitive.Root onError={(error) => console.error(error)}>
+  {children}
+</TaskLauncherPrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `onError` | `(error: Error) => void` | Callback when task creation fails |
+
+### Input
+
+Text input for the task prompt.
+
+```tsx
+<TaskLauncherPrimitive.Input placeholder="Enter task..." />
+```
+
+### Submit
+
+Button that submits the task.
+
+```tsx
+<TaskLauncherPrimitive.Submit>
+  Start Task
+</TaskLauncherPrimitive.Submit>
+```
+
+## Workspace
+
+```tsx
+import { WorkspacePrimitive } from "@assistant-ui/react-agent";
+```
+
+### Root
+
+Container for the workspace layout.
+
+```tsx
+<WorkspacePrimitive.Root>
+  {children}
+</WorkspacePrimitive.Root>
+```
+
+### Tasks
+
+Renders workspace tasks with a render function.
+
+```tsx
+<WorkspacePrimitive.Tasks>
+  {(tasks) => (
+    <ul>
+      {tasks.map((task) => (
+        <li key={task.id}>{task.id}</li>
+      ))}
+    </ul>
+  )}
+</WorkspacePrimitive.Tasks>
+```
+
+## ToolExecution
+
+```tsx
+import { ToolExecutionPrimitive } from "@assistant-ui/react-agent";
+```
+
+Primitives for rendering tool call and result visualization.
+
+### Root
+
+Container for tool execution display.
+
+### ToolName
+
+Renders the tool name.
+
+### Input
+
+Renders the tool input.
+
+### Output
+
+Renders the tool output/result.
+
+### Status
+
+Renders the tool execution status (pending, running, completed, failed).
+
+## PermissionMode
+
+```tsx
+import { PermissionModePrimitive } from "@assistant-ui/react-agent";
+```
+
+Primitives for permission mode selection UI.
+
+### Root
+
+Container for permission mode switcher.
+
+### Option
+
+Selectable permission mode option.
+
+```tsx
+<PermissionModePrimitive.Root>
+  <PermissionModePrimitive.Option mode="ask-all">
+    Ask for all tools
+  </PermissionModePrimitive.Option>
+  <PermissionModePrimitive.Option mode="auto-approve">
+    Auto-approve all
+  </PermissionModePrimitive.Option>
+</PermissionModePrimitive.Root>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `mode` | `PermissionMode` | The permission mode this option represents |
+
+## TaskTree
+
+```tsx
+import { TaskTreePrimitive } from "@assistant-ui/react-agent";
+```
+
+Primitives for hierarchical task/agent tree visualization.
+
+### Root
+
+Container for the task tree.
+
+### Node
+
+Renders a node in the task tree with its children.

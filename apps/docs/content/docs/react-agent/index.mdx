@@ -1,0 +1,126 @@
+---
+title: Getting Started
+description: Build agent supervision UIs for the Anthropic Claude Agent SDK with @assistant-ui/react-agent.
+---
+
+Build agent supervision UIs for the Anthropic Claude Agent SDK with @assistant-ui/react-agent. While @assistant-ui/react focuses on chat interfaces, react-agent handles agentic workflows—task management, tool approvals, multi-agent hierarchies, cost tracking, and real-time event streaming.
+
+## Installation
+
+```sh
+npm install @assistant-ui/react-agent
+```
+
+For server-side Anthropic SDK usage, also install the optional peer dependency:
+
+```sh
+npm install @anthropic-ai/claude-agent-sdk
+```
+
+## Quick Start
+
+```tsx
+import {
+  AgentWorkspaceProvider,
+  WorkspacePrimitive,
+  TaskLauncherPrimitive,
+  TaskPrimitive,
+} from "@assistant-ui/react-agent";
+
+export function AgentUI() {
+  return (
+    <AgentWorkspaceProvider apiKey="YOUR_API_KEY" baseUrl="/api/agent">
+      <TaskLauncherPrimitive.Root>
+        <TaskLauncherPrimitive.Input />
+        <TaskLauncherPrimitive.Submit />
+      </TaskLauncherPrimitive.Root>
+
+      <WorkspacePrimitive.Root>
+        <WorkspacePrimitive.Tasks>
+          {(tasks) => (
+            <ul>
+              {tasks.map((task) => (
+                <li key={task.id}>
+                  <TaskPrimitive.Root taskId={task.id}>
+                    <TaskPrimitive.Title /> - <TaskPrimitive.Status />
+                  </TaskPrimitive.Root>
+                </li>
+              ))}
+            </ul>
+          )}
+        </WorkspacePrimitive.Tasks>
+      </WorkspacePrimitive.Root>
+    </AgentWorkspaceProvider>
+  );
+}
+```
+
+<Callout type="info">
+  `apiKey` is sent from the browser to your app's `baseUrl` endpoint. Use an app/session token, not a raw Anthropic API key.
+</Callout>
+
+## Key Exports
+
+### Runtime
+
+- `WorkspaceRuntime` — manages multiple concurrent tasks/sessions
+- `TaskRuntime` — manages a single task lifecycle (draft → running → completed/failed)
+- `AgentRuntime` — tracks individual agent state within a task
+- `ApprovalRuntime` — handles tool approval request lifecycle
+- `LocalStoragePermissionStore` — configurable permission modes (auto-approve, ask-always, allowlist)
+
+### SDK
+
+- `HttpAgentClient` — client-side HTTP/SSE transport for connecting to agent API endpoints
+- `AnthropicAgentClient` — server-side wrapper for `@anthropic-ai/claude-agent-sdk` (import from `@assistant-ui/react-agent/server`)
+
+### Primitives
+
+Radix-style composable components for building agent UIs:
+
+- `WorkspacePrimitive` — multi-task workspace layout
+- `TaskPrimitive` — task status, cost, title display
+- `AgentPrimitive` — agent status display, event rendering
+- `ApprovalPrimitive` — tool approval UI with approve/deny actions
+- `ApprovalQueuePrimitive` — batch approval management
+- `TaskLauncherPrimitive` — task creation UI
+- `TaskTreePrimitive` — hierarchical task/agent tree visualization
+- `ToolExecutionPrimitive` — tool call/result visualization
+- `PermissionModePrimitive` — permission mode switcher
+
+### Hooks
+
+- `useAgentWorkspace` — workspace-level operations
+- `useWorkspaceTasks` — list of tasks in workspace
+- `useTaskState` — subscribe to task state
+- `useAgentState` — subscribe to agent state
+- `useApprovalState` — subscribe to approval state
+- `usePermissionMode` — permission mode management
+
+## Server Entry Point
+
+Use `@assistant-ui/react-agent/server` only in server code. It exports runtime classes/types and `AnthropicAgentClient`, but does not export hooks or UI primitives.
+
+```ts
+import { AnthropicAgentClient } from "@assistant-ui/react-agent/server";
+```
+
+## What's Next?
+
+<Cards>
+  <Card
+    title="Primitives"
+    description="Composable components for building agent supervision UIs."
+    href="/docs/react-agent/primitives"
+  />
+  <Card
+    title="Hooks"
+    description="React hooks for subscribing to agent, task, and approval state."
+    href="/docs/react-agent/hooks"
+  />
+  <Card
+    title="Example App"
+    description="Full-featured agent dashboard with session management, approval inbox, and tool visualization."
+    href="https://github.com/assistant-ui/assistant-ui/tree/main/examples/agent-dashboard"
+  />
+</Cards>

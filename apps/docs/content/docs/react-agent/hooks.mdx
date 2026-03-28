@@ -1,0 +1,284 @@
+---
+title: Hooks
+description: React hooks for subscribing to agent, task, and approval state.
+---
+
+## Workspace Hooks
+
+### useAgentWorkspace
+
+Access the `WorkspaceRuntime` instance for workspace-level operations.
+
+```tsx
+import { useAgentWorkspace } from "@assistant-ui/react-agent";
+
+const workspace = useAgentWorkspace();
+
+// Create a new task
+const task = await workspace.createTask({ prompt: "Analyze the codebase" });
+
+// Get all tasks
+const tasks = workspace.getTasks();
+
+// Get a specific task
+const task = workspace.getTask("task-123");
+
+// Remove a task
+workspace.removeTask("task-123");
+```
+
+### useWorkspaceTasks
+
+Subscribe to the list of tasks in the workspace. Re-renders when tasks are added or removed.
+
+```tsx
+import { useWorkspaceTasks } from "@assistant-ui/react-agent";
+
+const tasks = useWorkspaceTasks();
+
+return (
+  <ul>
+    {tasks.map((task) => (
+      <li key={task.id}>{task.getState().title}</li>
+    ))}
+  </ul>
+);
+```
+
+## Task Hooks
+
+### useTaskId
+
+Get the current task ID from context. Must be used within a `TaskProvider` or `TaskPrimitive.Root`.
+
+```tsx
+import { useTaskId } from "@assistant-ui/react-agent";
+
+const taskId = useTaskId();
+```
+
+### useTask
+
+Access the `TaskRuntime` instance for the current task.
+
+```tsx
+import { useTask } from "@assistant-ui/react-agent";
+
+const task = useTask();
+
+// Cancel the task
+task.cancel();
+
+// Get agents
+const agents = task.getAgents();
+
+// Get pending approvals
+const approvals = task.getPendingApprovals();
+```
+
+### useTaskState
+
+Subscribe to task state with a selector. Re-renders only when the selected value changes.
+
+```tsx
+import { useTaskState } from "@assistant-ui/react-agent";
+
+// Select specific fields
+const status = useTaskState((s) => s.status);
+const cost = useTaskState((s) => s.cost);
+const title = useTaskState((s) => s.title);
+
+// Full state shape
+const state = useTaskState((s) => s);
+// { id, title, status, cost, agents, pendingApprovals, createdAt, completedAt }
+```
+
+### useTaskStateById
+
+Subscribe to task state by ID without needing a provider.
+
+```tsx
+import { useTaskStateById } from "@assistant-ui/react-agent";
+
+const status = useTaskStateById("task-123", (s) => s.status);
+```
+
+## Agent Hooks
+
+### useAgentId
+
+Get the current agent ID from context. Must be used within an `AgentProvider` or `AgentPrimitive.Root`.
+
+```tsx
+import { useAgentId } from "@assistant-ui/react-agent";
+
+const agentId = useAgentId();
+```
+
+### useAgent
+
+Access the `AgentRuntime` instance for the current agent.
+
+```tsx
+import { useAgent } from "@assistant-ui/react-agent";
+
+const agent = useAgent();
+const state = agent.getState();
+```
+
+### useAgentState
+
+Subscribe to agent state with a selector. Re-renders only when the selected value changes.
+
+```tsx
+import { useAgentState } from "@assistant-ui/react-agent";
+
+// Select specific fields
+const name = useAgentState((s) => s.name);
+const status = useAgentState((s) => s.status);
+const cost = useAgentState((s) => s.cost);
+const events = useAgentState((s) => s.events);
+
+// Full state shape
+const state = useAgentState((s) => s);
+// { id, name, status, cost, events, parentAgentId, childAgentIds, taskId }
+```
+
+### useAgentStateById
+
+Subscribe to agent state by ID without needing a provider.
+
+```tsx
+import { useAgentStateById } from "@assistant-ui/react-agent";
+
+const status = useAgentStateById("agent-123", (s) => s.status);
+```
+
+## Approval Hooks
+
+### useApprovalId
+
+Get the current approval ID from context. Must be used within an `ApprovalProvider` or `ApprovalPrimitive.Root`.
+
+```tsx
+import { useApprovalId } from "@assistant-ui/react-agent";
+
+const approvalId = useApprovalId();
+```
+
+### useApproval
+
+Access the `ApprovalRuntime` instance for the current approval. Returns `null` if the approval has been resolved.
+
+```tsx
+import { useApproval } from "@assistant-ui/react-agent";
+
+const approval = useApproval();
+
+if (approval) {
+  // Approve the tool execution
+  await approval.approve();
+
+  // Or deny it
+  await approval.deny();
+}
+```
+
+### useApprovalState
+
+Subscribe to approval state with a selector. Returns `null` if the approval has been resolved.
+
+```tsx
+import { useApprovalState } from "@assistant-ui/react-agent";
+
+// Select specific fields
+const toolName = useApprovalState((s) => s.toolName);
+const toolInput = useApprovalState((s) => s.toolInput);
+const reason = useApprovalState((s) => s.reason);
+const status = useApprovalState((s) => s.status);
+
+// Full state shape
+const state = useApprovalState((s) => s);
+// { id, toolName, toolInput, reason, status, agentId, taskId, createdAt }
+```
+
+### useApprovalStateById
+
+Subscribe to approval state by ID without needing a provider.
+
+```tsx
+import { useApprovalStateById } from "@assistant-ui/react-agent";
+
+const status = useApprovalStateById("approval-123", (s) => s.status);
+```
+
+### useApprovalQueue
+
+Access the list of pending approvals across all tasks.
+
+```tsx
+import { useApprovalQueue } from "@assistant-ui/react-agent";
+
+const pendingApprovals = useApprovalQueue();
+
+return (
+  <div>
+    {pendingApprovals.map((approval) => (
+      <ApprovalCard key={approval.id} approvalId={approval.id} />
+    ))}
+  </div>
+);
+```
+
+## Permission Hooks
+
+### usePermissionMode
+
+Get the current permission mode.
+
+```tsx
+import { usePermissionMode } from "@assistant-ui/react-agent";
+
+const mode = usePermissionMode();
+// "ask-all" | "auto-approve" | ...
+```
+
+### useSetPermissionMode
+
+Get a function to set the permission mode.
+
+```tsx
+import { useSetPermissionMode } from "@assistant-ui/react-agent";
+
+const setMode = useSetPermissionMode();
+
+// Set to auto-approve all tools
+setMode("auto-approve");
+
+// Set to ask for all tools
+setMode("ask-all");
+```
+
+## Tree Hooks
+
+### useTaskTree
+
+Get a hierarchical tree structure of tasks.
+
+```tsx
+import { useTaskTree } from "@assistant-ui/react-agent";
+
+const taskTree = useTaskTree();
+// Returns TaskNode[] with nested children
+```
+
+### useAgentTree
+
+Get a hierarchical tree structure of agents within a task.
+
+```tsx
+import { useAgentTree } from "@assistant-ui/react-agent";
+
+const agentTree = useAgentTree();
+// Returns AgentTreeNode[] with nested children
+```

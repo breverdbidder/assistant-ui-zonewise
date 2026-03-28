@@ -1,0 +1,12 @@
+{
+  "title": "React Agent",
+  "description": "Build agent supervision UIs for the Claude Agent SDK",
+  "icon": "Bot",
+  "root": true,
+  "pages": [
+    "index",
+    "---API Reference---",
+    "primitives",
+    "hooks"
+  ]
+}

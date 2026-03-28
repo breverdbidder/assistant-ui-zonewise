@@ -4,6 +4,7 @@
     "primitives",
     "ui",
     "runtimes",
+    "react-agent",
     "react-native",
     "ink",
     "cloud",
