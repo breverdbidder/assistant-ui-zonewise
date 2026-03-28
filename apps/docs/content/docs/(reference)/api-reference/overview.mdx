@@ -240,6 +240,11 @@ A conversation thread.
       docsLink="#thread-primitive-suggestion"
       tooltip="Displays suggestions in the thread"
     />
+    <Component
+      name="ThreadPrimitive.Share"
+      docsLink="#thread-primitive-share"
+      tooltip="Shares the entire thread"
+    />
     <Component name="Composer" isLink={true} />
   </Component>
 </Component>
@@ -419,6 +424,11 @@ Manages the state and actions for individual messages
     docsLink="#action-bar-primitive-feedback-negative"
     tooltip="Provides negative feedback"
   />
+  <Component
+    name="ActionBarPrimitive.Share"
+    docsLink="#action-bar-primitive-share"
+    tooltip="Shares the message"
+  />
 </Component>
 
 ### BranchPickerPrimitive
@@ -565,3 +575,18 @@ Manages the state and actions for individual thread list items
 
 - [`useThreadViewportAutoScroll`](#use-thread-viewport-autoscroll)
 - [`useInlineRender`](#use-inline-render)
+
+### Sharing & Export
+
+- [`ThreadReadOnly`](#thread-read-only) - Read-only thread views for shared conversations
+- [`serializeMessages`](#serialize-messages) - Convert ThreadMessage[] to JSON-safe format
+- [`deserializeMessages`](#deserialize-messages) - Convert serialized messages back to ThreadMessage[]
+- [`toMarkdown`](#to-markdown) - Export messages to Markdown format
+- [`toJSON`](#to-json) - Export messages to JSON format
+
+### Replay
+
+- [`ThreadReplay`](#thread-replay) - Replay recorded conversations with playback controls
+- [`useThreadRecorder`](#use-thread-recorder) - Record live conversations for later replay
+- [`PlaybackControls`](#playback-controls) - Playback UI with play/pause, speed control, and seeking
+- [`diffMessages`](#diff-messages) - Compute diffs between message arrays for recording
