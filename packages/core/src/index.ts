@@ -105,6 +105,9 @@ export {
   WebSpeechDictationAdapter,
 } from "./adapters/speech";
 
+// Voice adapter
+export type { RealtimeVoiceAdapter } from "./adapters/voice";
+
 // Feedback adapter
 export type { FeedbackAdapter } from "./adapters/feedback";
 
@@ -152,6 +155,7 @@ export type {
   SubmitFeedbackOptions,
   ThreadSuggestion,
   SpeechState,
+  VoiceSessionState,
   SubmittedFeedback,
   ThreadRuntimeEventType,
   StartRunConfig,

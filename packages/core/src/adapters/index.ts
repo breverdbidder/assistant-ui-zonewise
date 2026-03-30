@@ -13,6 +13,9 @@ export {
   WebSpeechDictationAdapter,
 } from "./speech";
 
+// Voice adapter
+export type { RealtimeVoiceAdapter } from "./voice";
+
 // Feedback adapter
 export type { FeedbackAdapter } from "./feedback";
 
