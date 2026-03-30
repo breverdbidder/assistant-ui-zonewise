@@ -3,6 +3,7 @@ import {
   RuntimeCapabilities,
   ThreadRuntimeCore,
   SpeechState,
+  VoiceSessionState,
   ThreadRuntimeEventType,
   StartRunConfig,
   ResumeRunConfig,
@@ -187,6 +188,8 @@ export type ThreadState = {
    * @deprecated This API is still under active development and might change without notice.
    */
   readonly speech: SpeechState | undefined;
+
+  readonly voice: VoiceSessionState | undefined;
 };
 
 export const getThreadState = (
@@ -209,6 +212,7 @@ export const getThreadState = (
     suggestions: runtime.suggestions,
     extras: runtime.extras,
     speech: runtime.speech,
+    voice: runtime.voice,
   });
 };
 
@@ -317,6 +321,11 @@ export type ThreadRuntime = {
    */
   stopSpeaking(): void;
 
+  connectVoice(): void;
+  disconnectVoice(): void;
+  muteVoice(): void;
+  unmuteVoice(): void;
+
   unstable_on(event: ThreadRuntimeEventType, callback: () => void): Unsubscribe;
 };
 
@@ -388,6 +397,10 @@ export class ThreadRuntimeImpl implements ThreadRuntime {
     this.startRun = this.startRun.bind(this);
     this.cancelRun = this.cancelRun.bind(this);
     this.stopSpeaking = this.stopSpeaking.bind(this);
+    this.connectVoice = this.connectVoice.bind(this);
+    this.disconnectVoice = this.disconnectVoice.bind(this);
+    this.muteVoice = this.muteVoice.bind(this);
+    this.unmuteVoice = this.unmuteVoice.bind(this);
     this.export = this.export.bind(this);
     this.import = this.import.bind(this);
     this.reset = this.reset.bind(this);
@@ -461,6 +474,22 @@ export class ThreadRuntimeImpl implements ThreadRuntime {
 
   public stopSpeaking() {
     return this._threadBinding.getState().stopSpeaking();
+  }
+
+  public connectVoice() {
+    return this._threadBinding.getState().connectVoice();
+  }
+
+  public disconnectVoice() {
+    return this._threadBinding.getState().disconnectVoice();
+  }
+
+  public muteVoice() {
+    return this._threadBinding.getState().muteVoice();
+  }
+
+  public unmuteVoice() {
+    return this._threadBinding.getState().unmuteVoice();
   }
 
   public export() {

@@ -76,6 +76,22 @@ export class ReadonlyThreadRuntimeCore
     // noop
   }
 
+  connectVoice(): void {
+    throw READONLY_THREAD_ERROR;
+  }
+
+  disconnectVoice(): void {
+    // noop
+  }
+
+  muteVoice(): void {
+    throw READONLY_THREAD_ERROR;
+  }
+
+  unmuteVoice(): void {
+    throw READONLY_THREAD_ERROR;
+  }
+
   submitFeedback(): void {
     throw READONLY_THREAD_ERROR;
   }
@@ -179,6 +195,7 @@ export class ReadonlyThreadRuntimeCore
   }
 
   speech = undefined;
+  voice = undefined;
 
   capabilities = {
     switchToBranch: false,
@@ -189,6 +206,7 @@ export class ReadonlyThreadRuntimeCore
     unstable_copy: false,
     speech: false,
     dictation: false,
+    voice: false,
     attachments: false,
     feedback: false,
     queue: false,

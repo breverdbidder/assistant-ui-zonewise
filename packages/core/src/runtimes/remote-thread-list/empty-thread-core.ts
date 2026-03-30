@@ -48,6 +48,22 @@ export const EMPTY_THREAD_CORE: ThreadRuntimeCore = {
     throw EMPTY_THREAD_ERROR;
   },
 
+  connectVoice() {
+    throw EMPTY_THREAD_ERROR;
+  },
+
+  disconnectVoice() {
+    throw EMPTY_THREAD_ERROR;
+  },
+
+  muteVoice() {
+    throw EMPTY_THREAD_ERROR;
+  },
+
+  unmuteVoice() {
+    throw EMPTY_THREAD_ERROR;
+  },
+
   submitFeedback() {
     throw EMPTY_THREAD_ERROR;
   },
@@ -153,6 +169,7 @@ export const EMPTY_THREAD_CORE: ThreadRuntimeCore = {
   },
 
   speech: undefined,
+  voice: undefined,
 
   capabilities: {
     switchToBranch: false,
@@ -163,6 +180,7 @@ export const EMPTY_THREAD_CORE: ThreadRuntimeCore = {
     unstable_copy: false,
     speech: false,
     dictation: false,
+    voice: false,
     attachments: false,
     feedback: false,
     queue: false,

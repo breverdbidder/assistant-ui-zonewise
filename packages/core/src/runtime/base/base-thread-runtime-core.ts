@@ -1,7 +1,12 @@
-import type { AppendMessage, ThreadMessage } from "../../types/message";
+import type {
+  AppendMessage,
+  ThreadAssistantMessage,
+  ThreadMessage,
+} from "../../types/message";
 import type { Unsubscribe } from "../../types/unsubscribe";
 import type { ModelContextProvider } from "../../model-context/types";
 import { getThreadMessageText } from "../../utils/text";
+import { generateId } from "../../utils/id";
 import {
   ExportedMessageRepository,
   MessageRepository,
@@ -14,6 +19,7 @@ import type {
   SubmitFeedbackOptions,
   ThreadRuntimeCore,
   SpeechState,
+  VoiceSessionState,
   RuntimeCapabilities,
   ThreadRuntimeEventType,
   StartRunConfig,
@@ -23,12 +29,14 @@ import { DefaultEditComposerRuntimeCore } from "./default-edit-composer-runtime-
 import type { SpeechSynthesisAdapter } from "../../adapters/speech";
 import type { FeedbackAdapter } from "../../adapters/feedback";
 import type { AttachmentAdapter } from "../../adapters/attachment";
+import type { RealtimeVoiceAdapter } from "../../adapters/voice";
 import type { ThreadMessageLike } from "../utils/thread-message-like";
 
 type BaseThreadAdapters = {
   speech?: SpeechSynthesisAdapter | undefined;
   feedback?: FeedbackAdapter | undefined;
   attachments?: AttachmentAdapter | undefined;
+  voice?: RealtimeVoiceAdapter | undefined;
 };
 
 export abstract class BaseThreadRuntimeCore implements ThreadRuntimeCore {
@@ -53,8 +61,28 @@ export abstract class BaseThreadRuntimeCore implements ThreadRuntimeCore {
   public abstract importExternalState(state: any): void;
   public abstract unstable_loadExternalState(state: any): void;
 
-  public get messages() {
-    return this.repository.getMessages();
+  protected _voiceMessages: ThreadMessage[] = [];
+  protected _voiceGeneration = 0;
+  private _cachedMergedMessages: readonly ThreadMessage[] | null = null;
+  private _cachedVoiceGeneration = -1;
+
+  protected _markVoiceMessagesDirty() {
+    this._voiceGeneration++;
+    this._cachedMergedMessages = null;
+  }
+
+  public get messages(): readonly ThreadMessage[] {
+    if (this._voiceMessages.length === 0) {
+      return this.repository.getMessages();
+    }
+    if (this._cachedVoiceGeneration !== this._voiceGeneration) {
+      this._cachedMergedMessages = [
+        ...this.repository.getMessages(),
+        ...this._voiceMessages,
+      ];
+      this._cachedVoiceGeneration = this._voiceGeneration;
+    }
+    return this._cachedMergedMessages!;
   }
 
   public get state() {
@@ -99,11 +127,28 @@ export abstract class BaseThreadRuntimeCore implements ThreadRuntimeCore {
     try {
       return this.repository.getMessage(messageId);
     } catch {
+      // Check voice messages
+      const baseMessages = this.repository.getMessages();
+      const voiceIdx = this._voiceMessages.findIndex((m) => m.id === messageId);
+      if (voiceIdx !== -1) {
+        const parentId =
+          voiceIdx > 0
+            ? this._voiceMessages[voiceIdx - 1]!.id
+            : (baseMessages.at(-1)?.id ?? null);
+        return {
+          parentId,
+          message: this._voiceMessages[voiceIdx]!,
+          index: baseMessages.length + voiceIdx,
+        };
+      }
       return undefined;
     }
   }
 
   public getBranches(messageId: string): string[] {
+    if (this._voiceMessages.some((m) => m.id === messageId)) {
+      return [];
+    }
     return this.repository.getBranches(messageId);
   }
 
@@ -185,6 +230,152 @@ export abstract class BaseThreadRuntimeCore implements ThreadRuntimeCore {
   public stopSpeaking() {
     if (!this._stopSpeaking) throw new Error("No message is being spoken");
     this._stopSpeaking();
+    this._notifySubscribers();
+  }
+
+  // =========================================================================
+  // Voice
+  // =========================================================================
+
+  private _voiceSession: RealtimeVoiceAdapter.Session | undefined;
+  public voice: VoiceSessionState | undefined;
+
+  public connectVoice() {
+    const adapter = this.adapters?.voice;
+    if (!adapter) throw new Error("Voice adapter not configured");
+
+    this.disconnectVoice();
+
+    const session = adapter.connect({});
+    this._voiceSession = session;
+
+    this.voice = {
+      status: session.status,
+      isMuted: session.isMuted,
+    };
+    this._notifySubscribers();
+
+    session.onStatusChange((status) => {
+      if (status.type === "ended") {
+        this._finishVoiceAssistantMessage();
+        this._voiceSession = undefined;
+        this.voice = undefined;
+      } else {
+        this.voice = {
+          status,
+          isMuted: session.isMuted,
+        };
+      }
+      this._notifySubscribers();
+    });
+
+    // Track in-progress assistant message for streaming text
+    let currentAssistantMsg: ThreadAssistantMessage | null = null;
+
+    session.onTranscript((transcript) => {
+      this.ensureInitialized();
+
+      if (transcript.role === "user") {
+        // Finalize any in-progress assistant message first
+        this._finishVoiceAssistantMessage();
+        currentAssistantMsg = null;
+
+        if (transcript.isFinal) {
+          this._voiceMessages.push({
+            id: generateId(),
+            role: "user",
+            content: [{ type: "text", text: transcript.text }],
+            metadata: { custom: {} },
+            createdAt: new Date(),
+            status: { type: "complete", reason: "unknown" },
+            attachments: [],
+          });
+          this._markVoiceMessagesDirty();
+          this._notifySubscribers();
+        }
+      } else {
+        // Assistant transcript — stream into a single message
+        if (!currentAssistantMsg) {
+          currentAssistantMsg = {
+            id: generateId(),
+            role: "assistant",
+            content: [{ type: "text", text: transcript.text }],
+            metadata: {
+              unstable_state: this.state,
+              unstable_annotations: [],
+              unstable_data: [],
+              steps: [],
+              custom: {},
+            },
+            status: { type: "running" },
+            createdAt: new Date(),
+          };
+          this._voiceMessages.push(currentAssistantMsg);
+        } else {
+          // Replace with updated message (readonly fields)
+          const idx = this._voiceMessages.indexOf(currentAssistantMsg);
+          const updated: ThreadAssistantMessage = {
+            ...currentAssistantMsg,
+            content: [{ type: "text", text: transcript.text }],
+            ...(transcript.isFinal
+              ? {
+                  status: {
+                    type: "complete" as const,
+                    reason: "stop" as const,
+                  },
+                }
+              : {}),
+          };
+          this._voiceMessages[idx] = updated;
+          currentAssistantMsg = updated;
+        }
+
+        if (transcript.isFinal) {
+          currentAssistantMsg = null;
+        }
+
+        this._markVoiceMessagesDirty();
+        this._notifySubscribers();
+      }
+    });
+  }
+
+  private _finishVoiceAssistantMessage() {
+    const last = this._voiceMessages.at(-1);
+    if (last?.role === "assistant" && last.status.type === "running") {
+      const idx = this._voiceMessages.length - 1;
+      this._voiceMessages[idx] = {
+        ...(last as ThreadAssistantMessage),
+        status: { type: "complete", reason: "stop" },
+      };
+      this._markVoiceMessagesDirty();
+      this._notifySubscribers();
+    }
+  }
+
+  public disconnectVoice() {
+    this._voiceSession?.disconnect();
+    this._voiceSession = undefined;
+    this.voice = undefined;
+  }
+
+  public muteVoice() {
+    if (!this._voiceSession) throw new Error("No active voice session");
+    this._voiceSession.mute();
+    this.voice = {
+      status: this._voiceSession.status,
+      isMuted: true,
+    };
+    this._notifySubscribers();
+  }
+
+  public unmuteVoice() {
+    if (!this._voiceSession) throw new Error("No active voice session");
+    this._voiceSession.unmute();
+    this.voice = {
+      status: this._voiceSession.status,
+      isMuted: false,
+    };
     this._notifySubscribers();
   }
 

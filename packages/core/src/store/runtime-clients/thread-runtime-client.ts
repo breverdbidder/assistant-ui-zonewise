@@ -105,6 +105,7 @@ export const ThreadClient = resource(
         suggestions: runtimeState.suggestions,
         extras: runtimeState.extras,
         speech: runtimeState.speech,
+        voice: runtimeState.voice,
 
         composer: composer.state,
         messages: messages.state,
@@ -124,12 +125,10 @@ export const ThreadClient = resource(
       import: runtime.import,
       reset: runtime.reset,
       stopSpeaking: runtime.stopSpeaking,
-      startVoice: async () => {
-        throw new Error("startVoice is not supported in this runtime");
-      },
-      stopVoice: async () => {
-        throw new Error("stopVoice is not supported in this runtime");
-      },
+      connectVoice: runtime.connectVoice,
+      disconnectVoice: runtime.disconnectVoice,
+      muteVoice: runtime.muteVoice,
+      unmuteVoice: runtime.unmuteVoice,
       message: (selector) => {
         if ("id" in selector) {
           return messages.get({ key: selector.id });

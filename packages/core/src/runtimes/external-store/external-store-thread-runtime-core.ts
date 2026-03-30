@@ -63,6 +63,7 @@ export class ExternalStoreThreadRuntimeCore
     unstable_copy: false,
     speech: false,
     dictation: false,
+    voice: false,
     attachments: false,
     feedback: false,
     queue: false,
@@ -78,8 +79,26 @@ export class ExternalStoreThreadRuntimeCore
     return this._store.isLoading ?? false;
   }
 
-  public override get messages() {
-    return this._messages;
+  private _cachedExternalMergedMessages: readonly ThreadMessage[] | null = null;
+  private _cachedExternalVoiceGeneration = -1;
+  private _cachedExternalBaseMessages: readonly ThreadMessage[] | null = null;
+
+  public override get messages(): readonly ThreadMessage[] {
+    if (this._voiceMessages.length === 0) {
+      return this._messages;
+    }
+    if (
+      this._cachedExternalVoiceGeneration !== this._voiceGeneration ||
+      this._cachedExternalBaseMessages !== this._messages
+    ) {
+      this._cachedExternalMergedMessages = [
+        ...this._messages,
+        ...this._voiceMessages,
+      ];
+      this._cachedExternalVoiceGeneration = this._voiceGeneration;
+      this._cachedExternalBaseMessages = this._messages;
+    }
+    return this._cachedExternalMergedMessages!;
   }
 
   public override get state() {
@@ -137,6 +156,7 @@ export class ExternalStoreThreadRuntimeCore
       cancel: this._store.onCancel !== undefined,
       speech: this._store.adapters?.speech !== undefined,
       dictation: this._store.adapters?.dictation !== undefined,
+      voice: this._store.adapters?.voice !== undefined,
       unstable_copy: this._store.unstable_capabilities?.copy !== false,
       attachments: !!this._store.adapters?.attachments,
       feedback: !!this._store.adapters?.feedback,

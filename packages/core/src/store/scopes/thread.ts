@@ -2,6 +2,7 @@ import type { ReadonlyJSONValue } from "assistant-stream/utils";
 import type {
   RuntimeCapabilities,
   SpeechState,
+  VoiceSessionState,
   ThreadSuggestion,
 } from "../../runtime/interfaces/thread-runtime-core";
 import type { ExportedMessageRepository } from "../../runtime/utils/message-repository";
@@ -56,6 +57,7 @@ export type ThreadState = {
   readonly extras: unknown;
   /** @deprecated This API is still under active development and might change without notice. */
   readonly speech: SpeechState | undefined;
+  readonly voice: VoiceSessionState | undefined;
   readonly composer: ComposerState;
 };
 
@@ -112,14 +114,10 @@ export type ThreadMethods = {
   message(selector: { id: string } | { index: number }): MessageMethods;
   /** @deprecated This API is still under active development and might change without notice. */
   stopSpeaking(): void;
-  /**
-   * Start the voice session for the thread. Establishes any necessary media connections.
-   */
-  startVoice(): Promise<void>;
-  /**
-   * Stop the currently active voice session.
-   */
-  stopVoice(): Promise<void>;
+  connectVoice(): void;
+  disconnectVoice(): void;
+  muteVoice(): void;
+  unmuteVoice(): void;
   __internal_getRuntime?(): ThreadRuntime;
 };
 
