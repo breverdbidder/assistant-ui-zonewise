@@ -64,6 +64,10 @@ export {
 } from "@assistant-ui/core";
 export { CloudFileAttachmentAdapter } from "./legacy-runtime/runtime-cores/adapters/attachment/CloudFileAttachmentAdapter";
 
+// --- adapters/voice ---
+export type { RealtimeVoiceAdapter } from "@assistant-ui/core";
+export { useVoiceState, useVoiceControls } from "@assistant-ui/core/react";
+
 // --- adapters/feedback ---
 export type { FeedbackAdapter } from "@assistant-ui/core";
 

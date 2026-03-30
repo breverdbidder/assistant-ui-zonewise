@@ -217,6 +217,7 @@ export {
 } from "./primitive-hooks/useActionBarFeedback";
 export { useActionBarSpeak } from "./primitive-hooks/useActionBarSpeak";
 export { useActionBarStopSpeaking } from "./primitive-hooks/useActionBarStopSpeaking";
+export { useVoiceState, useVoiceControls } from "./primitive-hooks/useVoice";
 export { useBranchPickerNext } from "./primitive-hooks/useBranchPickerNext";
 export { useBranchPickerPrevious } from "./primitive-hooks/useBranchPickerPrevious";
 export {

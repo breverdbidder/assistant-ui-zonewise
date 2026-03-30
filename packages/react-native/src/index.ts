@@ -46,6 +46,7 @@ export type {
   AttachmentAdapter,
   ThreadHistoryAdapter,
   FeedbackAdapter,
+  RealtimeVoiceAdapter,
   SuggestionAdapter,
   // Other
   Unsubscribe,
